@@ -29,6 +29,9 @@ public class SystemFacet implements ModuleProvider {
 				int index = sys.lastIndexOf("-");
 				if(index!=-1)
 					sys = sys.substring(index+1,sys.length());
+				if(sys.equals("Others"))
+					continue;
+				sys = sys.replace("OSX", "OS X");
 				if(facetMap.containsKey(sys))
 				{
 					facetMap.get(sys).add(post);				
@@ -42,7 +45,7 @@ public class SystemFacet implements ModuleProvider {
 			}
 		}
 		
-		focusFacet SYSTEM = new focusFacet("System");
+		focusFacet SYSTEM = new focusFacet("Operating System");
 		Iterator iter = facetMap.entrySet().iterator();
 		while (iter.hasNext()) {
 		   Map.Entry entry = (Map.Entry) iter.next();

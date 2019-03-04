@@ -2,74 +2,95 @@ package cn.fdse.StackOverflow.searchModule;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.jsoup.Jsoup;
 
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
 
-public class Post implements CodeResult{
+public class Post implements CodeResult,Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	//common attributes
-	private String focus;
+	private String concern;
 	private String system;
 	private String language;
-	private String developE;
-	private String component;
-	private String technology;
+	private String developT;
+	private String framework;
 	private String database;
+	private String technology;
 	
 	public int postId;
 
 	public String post_body;
-	public String post_body_text;
-	public String post_body_code;
 	public String post_title;
 	public String post_tag;
+	public String post_body_text;
+	public String post_body_code;
 	
-	public float grade = 0;
+	private List<Answer> answer = new ArrayList<Answer>();
+
 	
-	/*public int post_comment_count;
-	public List<Comment> commentList;
-	
-	//answer related
-	public int parentId;
-	public Question parent_question;
-	//question related 
-	public int post_answer_count;
-	public List<Answer> AnswerList;	
-	public int accepted_answerId;
-	public Answer accpted_answer;*/
-	
-	public void setFacetName(String focus, String system, String language, String developE, String component, String technology, String database)
+	public void setFacetName(String concern, String system, String language, String developT, String framework,String database,String technology)
 	{
-		this.focus = focus;
+		this.concern = concern;
 		this.system = system;
 		this.language = language;
 		this.database = database;
-		this.developE = developE;
+		this.developT = developT;
+		this.framework = framework;
 		this.technology = technology;
-		this.component = component;
 	}
 	
-	public Post(int postId,String post_title,String post_body,String post_tag,int post_comment_count,
-			int parentId,int post_answer_count,int accepted_answerId)
+	public Post(int postId,String post_title,String post_body,String post_tag)
 	{
 		this.postId = postId;
 		this.post_title=post_title;
 		this.post_body=post_body;
 		this.post_tag=post_tag;
+		splitBody(post_body);
 	}
-	
-	public void setGrade(float gade)
+	public void splitBody(String post_body)
 	{
-		this.grade = grade;
-	}
+		String tempBody = post_body;
+		this.post_body_code="";
+		this.post_body_text="";
+		String codePrefix="<pre";
+		String codePostfix="</code></pre>";
+		while(tempBody.contains(codePrefix)&&tempBody.contains(codePostfix))
+		{
+			int prefixIndex = tempBody.indexOf(codePrefix);
+			int postfixIndex= tempBody.indexOf(codePostfix)+codePostfix.length();
+			try{
+			   post_body_code += tempBody.substring(prefixIndex, postfixIndex);
+			   tempBody = tempBody.substring(0,prefixIndex)+tempBody.substring(postfixIndex,tempBody.length());
+			}catch(StringIndexOutOfBoundsException e)
+			{
+				break;
+			}
+		}
+		codePrefix="<code";
+		codePostfix="</code>";
+		while(tempBody.contains(codePrefix)&&tempBody.contains(codePostfix))
+		{
+			int prefixIndex = tempBody.indexOf(codePrefix);
+			int postfixIndex= tempBody.indexOf(codePostfix)+codePostfix.length();
+			try{
+			   post_body_code += tempBody.substring(prefixIndex, postfixIndex);
+			   tempBody = tempBody.substring(0,prefixIndex)+tempBody.substring(postfixIndex,tempBody.length());
+			}catch(StringIndexOutOfBoundsException e)
+			{
+				break;
+			}
+		}		
+		post_body_text = tempBody;
 	
-	public float getGrade()
-	{
-		return grade;
+
 	}
-	
 	public String getText(String text)
 	{
 		return Jsoup.parse(text).body().text();
@@ -77,14 +98,6 @@ public class Post implements CodeResult{
 	
 	public String getPost_body() {
 		return this.post_body;
-	}
-
-	public String getPost_body_text() {
-		return Jsoup.parse(post_body_text).body().text();
-	}
-
-	public String getPost_body_code() {
-		return post_body_code;
 	}
 
 	public String getPost_title() {
@@ -108,84 +121,39 @@ public class Post implements CodeResult{
 		this.postId = postId;
 	}
 
-	
-	public void setFocus(String focus)
-	{
-		this.focus = focus;
-	}
-	
-	public String getFocus()
-	{
-		return this.focus;
-	}
-	public String getDevelopment() {
-		return developE;
-	}
-
-	public void getDevelopment(String develop) {
-		this.developE = develop;
-	}
-
-	public String getComponent() {
-		return component;
-	}
-
-	public void setComponent(String component) {
-		this.component = component;
-	}
-
 	public String getDatabase() {
 		return database;
 	}
 
-	public void setDatabase(String database) {
-		this.database = database;
-	}
-
-	public String getTechnology() {
-		return technology;
-	}
-
-	public void setTechnology(String technology) {
-		this.technology = technology;
-	}
-
-	public void setSystem(String system)
-	{
-		this.system = system;
-	}
 	
 	public String getSystem()
 	{
 		return this.system;
 	}
-	public void setLanguage(String language)
-	{
-		this.language = language;
-	}
+
 	
 	public String getLanguage()
 	{
 		return this.language;
 	}
+	
+	public void setAnaser(List<Answer> answerList)
+	{
+		int size = answerList.size();
+		for(int i = 0; i < size; i++)
+		{
+			
+			this.answer.add(answerList.get(i));
+		}
+	}
 
 	@Override
 	public String getBody() {
 		// TODO Auto-generated method stub
-		return this.post_body;
+		return post_body;
 	}
 
-	@Override
-	public String getBody_code() {
-		// TODO Auto-generated method stub
-		return this.post_body_code;
-	}
 
-	@Override
-	public String getBody_text() {
-		// TODO Auto-generated method stub
-		return this.post_body_text;
-	}
 
 	@Override
 	public String getId() {
@@ -203,6 +171,48 @@ public class Post implements CodeResult{
 	public String getTitle() {
 		// TODO Auto-generated method stub
 		return this.post_title;
+	}
+
+	@Override
+	public String getBody_code() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getBody_text() {
+		// TODO Auto-generated method stub
+		return getText(post_body_text);
+	}
+
+	@Override
+	public String getComponent() {
+		// TODO Auto-generated method stub
+		return this.framework;
+	}
+
+	@Override
+	public String getDevelopment() {
+		// TODO Auto-generated method stub
+		return this.developT;
+	}
+
+	@Override
+	public String getFocus() {
+		// TODO Auto-generated method stub
+		return this.concern;
+	}
+
+	@Override
+	public String getTechnology() {
+		// TODO Auto-generated method stub
+		return this.technology;
+	}
+
+	@Override
+	public List<Answer> getAnswerList() {
+		// TODO Auto-generated method stub
+		return answer;
 	}
 
 }

@@ -1,5 +1,6 @@
 package cn.fdse.MultiFacetWebService.framework.util;
 
+
 import cn.fdse.codeSearch.openInterface.module.Classification;
 import cn.fdse.codeSearch.openInterface.module.ClassificationList;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
@@ -9,11 +10,13 @@ public class DataSwitcher {
 	public static String switchData(ClassificationList cl){
 		StringBuffer sb = new StringBuffer();
 		sb.append("[");
-		for(Classification c:cl.getClassification()){
+		for(Classification c:cl.getClassification())
+		{
 			
 			StringBuffer subSb = new StringBuffer();
 			StringBuffer idSb = new StringBuffer();
-			for(CodeResult cr:c.getCodeSegments()){
+			for(CodeResult cr:c.getCodeSegments())
+			{
 				idSb.append(cr.getId()+";");
 				subSb.append("{text:'");
 				subSb.append(
@@ -42,7 +45,8 @@ public class DataSwitcher {
 			sb.append("]");
 			sb.append("},");
 		}
-		sb.deleteCharAt(sb.length()-1);
+		if(sb.length()!=1)
+			sb.deleteCharAt(sb.length()-1);
 		sb.append("]");
 //		System.out.println(sb.toString());
 		return sb.toString();
@@ -51,16 +55,37 @@ public class DataSwitcher {
 	private static String getShownTitle(CodeResult cr) {
 		return cr.getTitle();
 	}
+//	public static String processSpecialChar(String string)
+//	{
+//		return string.replace("{", "")
+//				.replace("}", "")
+//				.replace("[", "")
+//				.replace("]", "")
+//				.replace("'", "")
+//				.replace("&","")
+//				.replace(",","")
+//				.replace("<", "")
+//				.replace(">", "");
+//	}
 	public static String processSpecialChar(String string)
 	{
-		return string.replace("{", "")
+		return string.replace("<font color='red'>","")
+				.replace("</font>", "")
+				.replace("{", "")
 				.replace("}", "")
 				.replace("[", "")
 				.replace("]", "")
-				.replace("'", "")
-				.replace("&","")
+				.replace("\'", "&#39;")
+				.replace("\"", "&quot;")
+				.replace("&","&amp;")
 				.replace(",","")
-				.replace("<", "")
-				.replace(">", "");
+				.replace("<", "&gt;")
+				.replace(">", "&lt")
+				.replace("\n", "\\n")
+				.replace("\r", "\\r")
+				.replace("/", "\\/")
+				.replace("\\", "\\\\");
+	
 	}
+
 }

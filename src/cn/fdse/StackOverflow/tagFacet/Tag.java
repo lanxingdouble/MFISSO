@@ -1,24 +1,39 @@
 package cn.fdse.StackOverflow.tagFacet;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.carrot2.clustering.kmeans.BisectingKMeansClusteringAlgorithm;
 import org.carrot2.clustering.lingo.LingoClusteringAlgorithm;
+import org.carrot2.clustering.stc.STCClusteringAlgorithm;
 import org.carrot2.core.Cluster;
 import org.carrot2.core.Controller;
 import org.carrot2.core.ControllerFactory;
 import org.carrot2.core.Document;
 import org.carrot2.core.ProcessingResult;
+import org.carrot2.core.attribute.AttributeNames;
+import org.carrot2.util.attribute.AttributeUtils;
+
 import cn.fdse.codeSearch.openInterface.module.Classification;
 import cn.fdse.codeSearch.openInterface.module.ClassificationList;
 import cn.fdse.codeSearch.openInterface.module.ModuleProvider;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
 
 public class Tag implements ModuleProvider {
+	Map<String, Object> processingAttributes  = new HashMap<String, Object>();
+
+
+	public Tag()
+	{
+         processingAttributes.put(AttributeUtils.getKey(STCClusteringAlgorithm.class, "maxClusters"), 60);
+		 processingAttributes.put(AttributeUtils.getKey(STCClusteringAlgorithm.class, "maxDescPhraseLength"), 100);
+		 processingAttributes.put(AttributeUtils.getKey(STCClusteringAlgorithm.class, "maxPhrases"),3);
+	}
 
 	@Override
 	public ClassificationList analysis(List<CodeResult> postList,
@@ -48,6 +63,25 @@ public class Tag implements ModuleProvider {
 		
 		return TAG;
 	}
+//	@Override
+//	public ClassificationList analysis(List<CodeResult> postList,
+//			Map<String, Object> dataMap) {
+//		// TODO Auto-generated method stub	
+//	
+//		LDATag lt = new LDATag();
+//		focusFacet TAG = new focusFacet("Tag");
+//		lt.init(postList);
+//		int topicNum = lt.getTopicNum();
+//		HashMap<Integer, String> topicWord = lt.getTopicWord();
+//		for(int topicId = 0 ;topicId < topicNum; topicId++)
+//		{
+//		   	FocusItem item = new FocusItem(topicWord.get(topicId),lt.getSpecificTopicDocument(topicId));
+//		   	TAG.classifications.add(item);
+//			
+//		}
+//		
+//		return TAG;
+//	}
 
 	@Override
 	public boolean needSpecialRefine() {
@@ -64,20 +98,24 @@ public class Tag implements ModuleProvider {
 	
 	public  List<Cluster> clusteringByTag(List<CodeResult> postList) throws Exception {
 		/* Prepare Carrot2 documents */
+       
 		final ArrayList<Document> documents = new ArrayList<Document>();
 		documents.clear();
 		for (CodeResult post : postList) {
-			String tag = post.getTag();
+
+			 String tag  = post.getTag().replace("<font color='red'>", "").replace("</font>", "");
+
 				Document doc = new Document(tag, "Summary",
-						tag);
+						"Summary");
 				doc.setField("post", post);
 				documents.add(doc);
 			}
 
 		/* A controller to manage the processing pipeline. */
 		final Controller controller = ControllerFactory.createSimple();
-		final ProcessingResult byTagClusters = controller.process(documents,
-				null, LingoClusteringAlgorithm.class);
+		 processingAttributes.put(AttributeNames.DOCUMENTS, documents);
+
+		final ProcessingResult byTagClusters = 	 controller.process(processingAttributes, STCClusteringAlgorithm.class);
 		final List<Cluster> clustersByTag = byTagClusters.getClusters();
 //		ConsoleFormatter.displayClusters(clustersByTag);
 		return clustersByTag;
@@ -148,5 +186,20 @@ public class Tag implements ModuleProvider {
 			return description;
 		}
 		
+	}
+	
+	public static void main(String args[])
+	{
+//	    System.out.println("getData:"+new Date(System.currentTimeMillis())); 
+//		Tag tag = new Tag();
+//		PostDAOImpl pi = new PostDAOImpl();
+//		List<CodeResult> list = pi.findPostFromLuceneAndDatabase("how,connect,mysql");
+//	    System.out.println("getData:"+new Date(System.currentTimeMillis())); 
+        String www = "I k:";
+        System.out.println(www.replace(":", ""));
+//		tag.analysis(list, null);
+//	    System.out.println("processData:"+new Date(System.currentTimeMillis()));
+
+
 	}
 }

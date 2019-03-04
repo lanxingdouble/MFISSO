@@ -1,4 +1,4 @@
-package cn.fdse.StackOverflow.developFacet;
+package cn.fdse.StackOverflow.developmentTFacet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import cn.fdse.codeSearch.openInterface.module.ClassificationList;
 import cn.fdse.codeSearch.openInterface.module.ModuleProvider;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
 
-public class DevelopFacet implements ModuleProvider {
+public class DevelopmentTFacet implements ModuleProvider {
 
 	@Override
 	public ClassificationList analysis(List<CodeResult> postList,
@@ -29,6 +29,8 @@ public class DevelopFacet implements ModuleProvider {
 				int index = dev.lastIndexOf("-");
 				if(index!=-1)
 					dev = dev.substring(index+1,dev.length());
+				if(dev.equals("Others"))
+					continue;
 				if(facetMap.containsKey(dev))
 				{
 					facetMap.get(dev).add(post);				
@@ -42,7 +44,7 @@ public class DevelopFacet implements ModuleProvider {
 			}
 		}
 		
-		focusFacet DEVELOP = new focusFacet("Development");
+		focusFacet DEVELOP = new focusFacet("Development Tool");
 		Iterator iter = facetMap.entrySet().iterator();
 		while (iter.hasNext()) {
 		   Map.Entry entry = (Map.Entry) iter.next();

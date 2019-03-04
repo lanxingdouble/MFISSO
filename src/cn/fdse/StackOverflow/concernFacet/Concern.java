@@ -1,4 +1,4 @@
-package cn.fdse.StackOverflow.contentFacet;
+package cn.fdse.StackOverflow.concernFacet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,47 +7,82 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.carrot2.clustering.lingo.LingoClusteringAlgorithm;
-import org.carrot2.core.Cluster;
-import org.carrot2.core.Controller;
-import org.carrot2.core.ControllerFactory;
-import org.carrot2.core.Document;
-import org.carrot2.core.ProcessingResult;
+import cn.fdse.StackOverflow.searchModule.util.Global;
 import cn.fdse.codeSearch.openInterface.module.Classification;
 import cn.fdse.codeSearch.openInterface.module.ClassificationList;
 import cn.fdse.codeSearch.openInterface.module.ModuleProvider;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
 
-public class Content implements ModuleProvider {
+public class Concern implements ModuleProvider {
 
 	@Override
 	public ClassificationList analysis(List<CodeResult> postList,
 			Map<String, Object> dataMap) {
 		// TODO Auto-generated method stub	
-		HashMap<String,List<CodeResult>> facetMap = new HashMap<String,List<CodeResult>>();	
-		List<Cluster> clusterByContentList = new ArrayList<Cluster>();
-		try {
-				clusterByContentList = clusteringByContent(postList);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		focusFacet CONTENT = new focusFacet("Content");
-		for(Cluster contentCluster:clusterByContentList){
-			List<Document> documentList = contentCluster.getDocuments();
-			List<CodeResult> codeResultList = new ArrayList<CodeResult>();
-			for (Document document:documentList)
+		HashMap<String,List<CodeResult>> facetMap = new HashMap<String,List<CodeResult>>();
+		for(CodeResult post:postList)
+		{
+			String focusSet = post.getFocus();
+			if(focusSet == null)
+				continue;
+			String[] focus = focusSet.split(",");
+			List<String> titleList = Global.titleL;
+			for(String title:titleList)
 			{
-				CodeResult post = document.getField("post");
-				codeResultList.add(post);
+				String t = post.getTitle().replace("<font color='red'>", "").replace("</font>", "");
+				if(t.toLowerCase().contains(title.toLowerCase()))
+				{
+					System.out.println("Facet:"+post.getFocus());
+					System.out.println("Facet:"+post.getDatabase());
+
+					System.out.println("Facet:"+post.getDevelopment());
+					
+
+					System.out.println("Facet:"+post.getComponent());
+
+					System.out.println("Facet:"+post.getLanguage());
+					System.out.println("Facet:"+post.getSystem());
+
+					System.out.println("Facet:"+post.getTechnology());
+
+
+				}
 			}
-		   	FocusItem item = new FocusItem(contentCluster.getLabel(),codeResultList);
-		   	CONTENT.classifications.add(item);
+			
+
+			for(String foc:focus)
+			{
+				int index = foc.lastIndexOf("-");
+				if(index!=-1)
+					foc = foc.substring(index+1,foc.length());
+				if(foc.equals("Others")||foc.equals(" Language Features"))
+					continue;
+				if(foc.equalsIgnoreCase(" Explaination"))
+					foc = " Explanation";
+				if(facetMap.containsKey(foc))
+				{
+					facetMap.get(foc).add(post);				
+				}else
+				{
+//					System.out.println("Concern:"+foc);
+					List<CodeResult> list = new ArrayList<CodeResult>();
+					list.add(post);
+					facetMap.put(foc, list);
+				}
+			}
 		}
 		
-		return CONTENT;
+		focusFacet FOCUS = new focusFacet("Concern");
+		Iterator iter = facetMap.entrySet().iterator();
+		while (iter.hasNext()) {
+		   Map.Entry entry = (Map.Entry) iter.next();
+		   FocusItem item = new FocusItem((String) entry.getKey(),(List<CodeResult>)entry.getValue());
+		   FOCUS.classifications.add(item);
+		}
+		
+		return FOCUS;
 	}
+
 
 	@Override
 	public boolean needSpecialRefine() {
@@ -60,33 +95,6 @@ public class Content implements ModuleProvider {
 			Map<String, Object> arg1) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-	
-	public  List<Cluster> clusteringByContent(List<CodeResult> postList)
-			throws Exception {
-		/* Prepare Carrot2 documents */
-		final ArrayList<Document> documents = new ArrayList<Document>();
-		for (CodeResult post : postList) {
-				Document doc = new Document(post.getTitle(),
-						post.getBody_text(), "Description");
-				doc.setField("post", post);
-				documents.add(doc);
-		}
-		/* A controller to manage the processing pipeline. */
-		final Controller controller = ControllerFactory.createSimple();
-		/*
-		 * Perform clustering by topic using the Lingo algorithm. Lingo can take
-		 * advantage of the original query, so we provide it along with the
-		 * documents.
-		 */
-		final ProcessingResult byContentClusters = controller.process(
-				documents, "database", LingoClusteringAlgorithm.class);
-		// BisectingKMeansClusteringAlgorithm,LingoClusteringAlgorithm,STCClusteringAlgorithm
-		final List<Cluster> clustersByContent = byContentClusters.getClusters();
-		// [[[end:clustering-document-list]]]
-
-//		ConsoleFormatter.displayClusters(clustersByContent);
-		return clustersByContent;
 	}
 	
 	class focusFacet implements ClassificationList {

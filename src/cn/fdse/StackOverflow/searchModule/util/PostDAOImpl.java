@@ -1,526 +1,456 @@
 package cn.fdse.StackOverflow.searchModule.util;
 
-import java.sql.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.NumericRangeFilter;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.highlight.Formatter;
+import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
+import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.SimpleFragmenter;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
+
+//import com.sun.org.apache.xalan.internal.xsltc.runtime.Hashtable;
+
+import cn.fdse.StackOverflow.searchModule.Answer;
 import cn.fdse.StackOverflow.searchModule.Post;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
 
 public class PostDAOImpl implements PostDAO {
-	
-	
-/*	public List<Integer> findTestComments() throws Exception {
-		Connection conn = DBConnection.getConnection();
-		PreparedStatement pstmt = null;
-		List<Comment> comments = new ArrayList<Comment>();
-		List<Integer> listInteger = new ArrayList<Integer>();
+    String answerCount;
+    int size;
+    //	Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_46);
+    Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_46);
+    List<Answer> answerList = new ArrayList<Answer>();
+    List<Answer> goodAnswerList = new ArrayList<Answer>();
 
-		String SQLString = "SELECT * FROM stackoverflowdata.testposts;";
+    List<CodeResult> postList = new ArrayList<CodeResult>();
+    File file = null, fileAnswer = null;
+    String parentId, postTypeId, postId;
+    Directory dirPost, dirAnswer;
+    TermQuery titleQuery = null, bodyQuery = null, tagQuery = null;
+    Query numberRange = null, postType = null;
+    int id = 0;
+    String title, body, tag;
+    Post post = null;
+    IndexSearcher searcherPost = null, searchAnswer = null;
+    TopDocs docsPost = null;
+    Document document = null;
+    String tempBody = "";
+    String splitBody;
+    String startPre = "<code>";
+    String endPre = "</code>";
+    boolean omit = false;
+    List<Post> tempPostList;
 
-		try {
-			pstmt = conn.prepareStatement(SQLString);
-			ResultSet rs = pstmt.executeQuery();
-			while(rs.next())
-			{
-				listInteger.add(rs.getInt("PostId"));
-			}
-		} catch (Exception ex) {
-			System.out.println("Error : " + ex.toString());
-		} finally {
-			DBConnection.close(conn);
-			DBConnection.close(pstmt);
-		}
-		return listInteger;
-	}*/
-	
-	
-	public List<CodeResult> findPosts(String keywords) {
-		Connection conn = null;
-		try {
-			conn = DBConnection.getConnection();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		PreparedStatement pstmt = null;
-		List<CodeResult> posts = new ArrayList<CodeResult>();
-		System.out.println("String:"+keywords);
-		String SQLString = "SELECT * FROM stackoverflowdata.postFacetType, stackoverflowdata.testposts where postFacetType.PostId = testposts.Id and CONCAT(title,tags,body) regexp replace('"
-				+keywords+"',',','|')";
-		
-		try {
-			pstmt = conn.prepareStatement(SQLString);
-			ResultSet rs = pstmt.executeQuery();
-			posts = constructTestPostList(rs);
-		} catch (Exception ex) {
-			System.out.println("Error : " + ex.toString());
-		} finally {
-			DBConnection.close(conn);
-			DBConnection.close(pstmt);
-		}
-		return posts;
-	}
-	
-/*	public List<Comment> findRelatedComments(int postId) throws Exception {
-		Connection conn = DBConnection.getConnection();
-		PreparedStatement pstmt = null;
-		List<Comment> comments = new ArrayList<Comment>();
+    int score;
+    String highterBody, titleBody, tagBody;
+    int count;
+    //	 BooleanQuery booleanQuery=new BooleanQuery();
+    BooleanQuery booleanQuery;
+    IndexReader reader, readerAnswer;
+    QueryScorer queryScorer;
+    Formatter formatter;
+    Highlighter highlighter;
+    searchAnswerThread sat[] = new searchAnswerThread[11];
+    Thread t[] = new Thread[11];
 
-		String SQLString = "SELECT * FROM stackoverflowdata.testcomments WHERE PostId="+postId+";";
+    public PostDAOImpl() {
 
-		try {
-			pstmt = conn.prepareStatement(SQLString);
-			ResultSet rs = pstmt.executeQuery();
-			while(rs.next())
-			{
-				int commentId = rs.getInt("Id");
-				String text = rs.getString("Text");
-				comments.add(new Comment(commentId,postId,text));
-			}
-		} catch (Exception ex) {
-			System.out.println("Error : " + ex.toString());
-		} finally {
-			DBConnection.close(conn);
-			DBConnection.close(pstmt);
-		}
-		return comments;
-	}
-	
-	public List<Answer> findRelatedAnswers(int postId) throws Exception {
-		Connection conn = DBConnection.getConnection();
-//		PreparedStatement pstmt = null;
-		Statement stmt = conn.createStatement();
-		List<Answer> answers = new ArrayList<Answer>();
-//		System.out.println("Id:"+postId);
+    }
 
-		String SQLString = "SELECT * FROM stackoverflowdata.posts WHERE ParentId="+postId+";";
-
-		try {
-//			pstmt = conn.prepareStatement(SQLString);
-//			ResultSet rs = pstmt.executeQuery();
-			ResultSet rs = stmt.executeQuery(SQLString);
-			while(rs.next())
-			{
-				//comment Attribute;
-				int post_typeId = rs.getInt("PostTypeId");
-				String post_title = rs.getString("title");
-				String post_body = rs.getString("body");
-				String post_tag = rs.getString("tags");
-//				System.out.println("check:");
-				int post_comment_count = rs.getInt("CommentCount");//may be null
-				//Answer Attribute;
-				int parentId = rs.getInt("parentId");//may be null
-				//Question Attribute;
-				int post_answer_count = rs.getInt("AnswerCount");//may be null
-				int accepted_answerId = rs.getInt("AcceptedAnswerId");//may be null
-				
-				answers.add(new Answer(postId,post_title,post_body,post_tag,
-						post_comment_count,parentId,post_answer_count,accepted_answerId,null,null,null));
-			}		
-			} catch (Exception ex) {
-			System.out.println("Error : " + ex.toString());
-		} finally {
-			DBConnection.close(conn);
-//			DBConnection.close(pstmt);
-			stmt.close();
-		}
-		return answers;
-	}
-	
-	public Question findRelatedQuestion(int postId) throws Exception {
-		Connection conn = DBConnection.getConnection();
-		PreparedStatement pstmt = null;
-		Question resultQuestion = null;
-		String SQLString = "SELECT * FROM stackoverflowdata.newposts WHERE id="+postId+";";
-
-		try {
-			pstmt = conn.prepareStatement(SQLString);
-			ResultSet rs = pstmt.executeQuery();
-			while(rs.next())
-			{
-				//comment Attribute;
-				int post_typeId = rs.getInt("PostTypeId");
-				String post_title = rs.getString("title");
-				String post_body = rs.getString("body");
-				String post_tag = rs.getString("tags");
-				int post_comment_count = rs.getInt("CommentCount");//may be null
-				//Answer Attribute;
-				int parentId = rs.getInt("parentID");//may be null
-				//Question Attribute;
-				int post_answer_count = rs.getInt("AnswerCount");//may be null
-				int accepted_answerId = rs.getInt("AcceptedAnswerId");//may be null
-				
-				resultQuestion=new Question(postId,post_title, post_body,post_tag,
-						post_comment_count,parentId,post_answer_count,accepted_answerId,null,null,null);
-			}		} catch (Exception ex) {
-			System.out.println("Error : " + ex.toString());
-		} finally {
-			DBConnection.close(conn);
-			DBConnection.close(pstmt);
-		}
-		return resultQuestion;
-	}*/
-	
-	public List<CodeResult> constructTestPostList(ResultSet rs) throws SQLException{
-		List<CodeResult> posts = new ArrayList<CodeResult>();
-		int id = 0;
-		try {
-		while (rs.next()) {
-			//comment Attribute;
-			id++;
-			int postId = rs.getInt("postFacetType.PostId");
-			String focus = rs.getString("Focus");
-			String system = rs.getString("System");
-			String language = rs.getString("Language");
-//			String develop = rs.getString("develop");
-//			String component = rs.getString("component");
-//			String database = rs.getString("database");
-//			String technology = rs.getString("technology");
-			String develop = "develop-eclipse";
-			String component = "toolkit-qt";
-			String database = "database-mysql";
-			String technology = "technology-json";
-
-			int post_typeId = rs.getInt("PostTypeId");
-			String post_title = rs.getString("title");
-			String post_body = rs.getString("body");
-			String post_tag = rs.getString("tags");
-			int post_comment_count = rs.getInt("CommentCount");//may be null
-			//Answer Attribute;
-			int parentId = rs.getInt("parentID");//may be null
-			//Question Attribute;
-			int post_answer_count = rs.getInt("AnswerCount");//may be null
-			int accepted_answerId = rs.getInt("AcceptedAnswerId");//may be null
-			if(post_answer_count==0)
-				continue;
-			Post post = new Post(postId,post_title,post_body,post_tag,post_comment_count
-					,parentId,post_answer_count,accepted_answerId);
-			post.setFacetName(focus, system, language, develop, component, technology, database);
-			posts.add(post);
-		}
-		}catch (Exception ex) {
-			System.out.println("Error : " + ex.toString());
-		}
-		return posts;
-	}
+    public PostDAOImpl(String systemPath) {
+        try {
+            booleanQuery = new BooleanQuery();
+            BooleanQuery.setMaxClauseCount(50000);
 
 
-//	public List<Post> constructedPostList(ResultSet rs) throws SQLException{
-//		List<Post> posts = new ArrayList<Post>();
-//		int id = 0;
-//		try {
-//		while (rs.next()) {
-//			//comment Attribute;
-//			id++;
-//			int postId = rs.getInt("Id");
-//			String focus = null;
-//			String environment = null;
-//			int post_typeId = rs.getInt("PostTypeId");
-//			String post_title = rs.getString("title");
+            file = new File(systemPath + "postAndFacet");
+//			 fileAnswer = new File(systemPath+"answers");
+
+            dirPost = FSDirectory.open(file);
+//			 dirAnswer = FSDirectory.open(fileAnswer);
+
+            reader = DirectoryReader.open(dirPost);// 读取目录
+//             readerAnswer = DirectoryReader.open(dirAnswer);
+
+            searcherPost = new IndexSearcher(reader);
+//			 searchAnswer = new IndexSearcher(readerAnswer);
+            formatter = new SimpleHTMLFormatter("<font color='red'>", "</font>");
+
+
+        } catch (IOException e2) {
+            // TODO Auto-generated catch block
+            e2.printStackTrace();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public void setPath(String systemPath) {
+
+        file = new File(systemPath + "postAndFacet");
+    }
+
+
+    public List<CodeResult> findPostFromLuceneAndDatabase(String keywords) {
+        postList.clear();
+
+        String[] keyword = keywords.split(",");
+        int num1 = 0, num2 = 0;
+        boolean iS = false;
+
+        for (String kw : keyword) {
+            if (!kw.equalsIgnoreCase("")) {
+                kw = kw.toLowerCase().replace(":", "");
+                titleQuery = new TermQuery(new Term("Title", kw));
+                titleQuery.setBoost(40f);
+                bodyQuery = new TermQuery(new Term("Body", kw));
+                bodyQuery.setBoost(1f);
+                tagQuery = new TermQuery(new Term("Tags", kw));
+                tagQuery.setBoost(1f);
+                booleanQuery.add(titleQuery, BooleanClause.Occur.SHOULD);
+                booleanQuery.add(bodyQuery, BooleanClause.Occur.SHOULD);
+                booleanQuery.add(tagQuery, BooleanClause.Occur.SHOULD);
+//				 
+            }
+
+        }
+//		 
+
+//		 titleQuery = new TermQuery(new Term("Title","java"));
+//		 booleanQuery.add(titleQuery,BooleanClause.Occur.SHOULD);
+
+        try {
+            docsPost = searcherPost.search(booleanQuery, 200);
+
+            queryScorer = new QueryScorer(booleanQuery);
+
+            highlighter = new Highlighter(formatter, queryScorer);
+            highlighter.setTextFragmenter(new SimpleFragmenter(200));
+            int num = 0;
+            int numIndex = 0;
+            for (ScoreDoc doc : docsPost.scoreDocs) {
+                tempBody = "";
+                splitBody = "";
+                highterBody = "";
+                titleBody = "";
+                tagBody = "";
+
+                document = searcherPost.doc(doc.doc);
+
+                postTypeId = document.get("postTypeId");
+                parentId = document.get("ParentId");
+                postId = document.get("postId");
+                score = Integer.parseInt(document.get("Score"));
+                answerCount = document.get("AnswerCount");
+                if (score >= 0 && Integer.parseInt(answerCount) >= 1 && postTypeId.equals("1")) {
+                    title = document.get("Title");
+                    title = processJSPSpecialChar(title);
+                    body = document.get("Body");
+                    tag = document.get("Tags").replace("<", " ").replace(">", " ");
+                    id = Integer.parseInt(postId);
+
+                    count = body.length() / 100;
+                    for (int i = 0; i < count; i++) {
+                        splitBody = body.substring(i * 100, (i + 1) * 100);
+
+
+                        highterBody = highlighter.getBestFragment(analyzer.tokenStream("token", splitBody), splitBody);
+
+                        if (highterBody == null)
+                            tempBody += splitBody;
+                        else
+                            tempBody += highterBody;
+                    }
+                    splitBody = body.substring(count * 100, body.length());
+
+                    highterBody = highlighter.getBestFragment(analyzer.tokenStream("token", splitBody), splitBody);
+
+                    if (highterBody == null)
+                        tempBody += splitBody;
+                    else
+                        tempBody += highterBody;
+
+
+                    body = tempBody;
+
+                    titleBody = highlighter.getBestFragment(analyzer.tokenStream("token", title), title);
+
+
+                    if (titleBody != null)
+                        title = titleBody;
+
+
+                    tagBody = highlighter.getBestFragment(analyzer.tokenStream("token", tag), tag);
+
+
+                    if (tagBody != null)
+                        tag = tagBody;
+
+                    post = new Post(id, title, body, tag);
+                    post.setFacetName(document.get("Concern"), document.get("System"), document.get("Language"), document.get("Development"),
+                            document.get("Framework"), document.get("Database"), document.get("Technology"));
+                    if (num == 0) {
+                        tempPostList = new ArrayList<Post>();
+                    }
+                    tempPostList.add(post);
+                    num++;
+                    if (num == 30) {
+                        sat[numIndex] = new searchAnswerThread(tempPostList, searcherPost, highlighter, analyzer);
+                        t[numIndex] = new Thread(sat[numIndex]);
+                        t[numIndex].start();
+                        num = 0;
+                        numIndex++;
+                        iS = false;
+
+
+                    }
+//				    post.setAnaser(sortAnswer(findPostRelatedAnswers(id,searcherPost)));
+//			    	postList.add(post);
+
+                }
+//				    else if(postTypeId.equals("2")&&(score>=0))
+//			    {
+//			    	TopDocs parentDoc = searcherPost.search(new TermQuery(new Term("postId",parentId)),1); 
+//			    	for(ScoreDoc d:parentDoc.scoreDocs)
+//				    {
+//					    document =searcherPost.doc(d.doc);
 //
-//			String post_body = rs.getString("body");
+//					    if(filter(document)&&!postList.contains(parentId))
+//					    {
+//					        id = Integer.parseInt(parentId);
+//					        
+//					        title = document.get("Title");
+//					     	title = processJSPSpecialChar(title);
+//					    	body = document.get("Body");
 //
-//			String post_tag = rs.getString("tags");
-//			int post_comment_count = rs.getInt("CommentCount");//may be null
-//			//Answer Attribute;
-//			int parentId = rs.getInt("parentID");//may be null
-//			//Question Attribute;
-//			int post_answer_count = rs.getInt("AnswerCount");//may be null
-//			int accepted_answerId = rs.getInt("AcceptedAnswerId");//may be null
+//					    	tag = document.get("Tags").replace("<", " ").replace(">", " ");
+//					    	
+//		     
+//					    	count = body.length()/100;
+//					    	for(int i = 0;i < count; i++)
+//					    	{
+//					    		splitBody= body.substring(i*100,(i+1)*100);
+//					    		highterBody = highlighter.getBestFragment(analyzer.tokenStream("token", splitBody),splitBody);
+//					    		if(highterBody==null)
+//					    			tempBody += splitBody;
+//					    		else
+//					    			tempBody+=highterBody;
+//					    	}
+//					    	splitBody = body.substring(count*100,body.length());
+//					    	highterBody = highlighter.getBestFragment(analyzer.tokenStream("token", splitBody),splitBody);
+//					    	if(highterBody==null)
+//				    			tempBody += splitBody;
+//				    		else
+//				    			tempBody+=highterBody;
+//					    	
+//					    	 titleBody = highlighter.getBestFragment(analyzer.tokenStream("token", title), title);
 //
-////			if(!FilterPost.FilterAnswerCount(post_answer_count))
-////				continue;
-////			FilterPost.setFilterTag("mysql");
-////			if(!FilterPost.FilterTag(post_tag))
-////				continue;
-//			switch (post_typeId) {
-//			case 1: {
-//				Question question = new Question(postId,post_title, post_body,post_tag,post_comment_count
-//						,parentId,post_answer_count,accepted_answerId,null,null,null);
-////				//generate commentList and AnswerList 
-////				if(question.getPost_comment_count()>0)
-////					question.setCommentList(this.findRelatedComments(question.getPostId()));
-////				if(question.getPost_answer_count()>0)
-////					question.setAnswerList(this.findRelatedAnswers(question.getPostId()));
-//				Global.intList.add(postId);
-//				posts.add(question);
-//				break;
-//			}
-//			case 2: {
-//				Answer answer = new Answer(postId,post_title,post_body
-//						,post_tag,post_comment_count,parentId,post_answer_count,accepted_answerId,null,null,null);
-//				
-////				//generate commentList and parent Question 
-////				if(answer.getPost_comment_count()>0)
-////					answer.setCommentList(this.findRelatedComments(answer.getPostId()));
-////				if(answer.getParentId()>0)
-////					answer.setParent_question(this.findRelatedQuestion(answer.getParentId()));
-//				
-//				posts.add(answer);
-//				break;
-//			}
-//			default:
-//				;
-//			}
-//		}
-//		}catch (Exception ex) {
-//			System.out.println("Error : " + ex.toString());
-//		}
-//		return posts;
-//	}
-
-	@Override
-	public List<Post> findPosts() throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-/*	public List<Post> findTestPosts(String keywords) {
-		Connection conn = null;
-		try {
-			conn = DBConnection.getConnection();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		PreparedStatement pstmt = null;
-		List<Post> posts = new ArrayList<Post>();
-		// String keywords = "java,mysql,database";
-		// generate query string based on separate keywords
-		// using regexp replace('keyword1,keyword2',',','|')
-		System.out.println("String:"+keywords);
-		String SQLString = "SELECT * FROM stackoverflowdata.testposts";
-	//	where Id>=696 and Id<=234888
-//		String SQLString = "SELECT * FROM stackoverflowdata.posts WHERE PostTypeId = 1 and title like '%how%' and title like '%connect%' and title like '%mysql%' limit 20";
-//		String SQLString = "SELECT * FROM stackoverflowdata.posts WHERE CONCAT(title,tags,body) like '"
-//				+ "sort%" +"'" +"or CONCAT(title,tags,body) like 'list%'";
-
-		try {
-			pstmt = conn.prepareStatement(SQLString);
-			ResultSet rs = pstmt.executeQuery();
-			posts = constructedPostList(rs);
-		} catch (Exception ex) {
-			System.out.println("Error : " + ex.toString());
-		} finally {
-			DBConnection.close(conn);
-			DBConnection.close(pstmt);
-		}
-		return posts;
-	}*/
-	public void Update(HashMap<Integer,PostFacetType> hashpft)
-	{ 
-		Connection conn = null;
-		Statement stat = null;
-		try {
-			conn = DBConnection.getConnection();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		try 
-	   { //4.发送SQL语句进行数据更新
-			stat = conn.createStatement();
-			int id = 928;
-             Iterator iter = hashpft.keySet().iterator();
-			
-			while (iter.hasNext())
-			{
-				PostFacetType pft = (PostFacetType) hashpft.get(iter.next());
-				String sql = "insert into stackoverflowdata.postFacetType values("+id +","+ pft.postId +","+ pft.postTypeId +",'"+pft.focus+"','"+
-			   pft.system+"','"+pft.language+ "','"+pft.tag+"','"+pft.content+"','"+pft.code+"');";
-				stat.executeUpdate(sql);
-				id++;
-			}
-		} catch(Exception e)
-		{ 
-			System.out.println("信息："+e.getMessage()); 
-		}finally{
-			try {
-				stat.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			DBConnection.close(conn);
-		}
-		
-	}
-/*	public List<Post> findSqlitePosts(String keywords) {
-		Connection conn = null;
-		Statement stat = null;
-		try {
-			conn = DBConnection.getConnectio();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		List<Post> posts = new ArrayList<Post>();
-		
-		System.out.println("String:"+keywords);
-//		String SQLString = "SELECT * FROM postFacetType, testposts where postFacetType.PostId = testposts.Id and body like '%"
-//				+keywords+"%';";
-//		String SQLString = "SELECT * FROM postFacetType, testposts where postFacetType.PostId = testposts.Id and (body like '%java%' or title like '%java%' or tags like '%java%'"
-//				+ "or body like '%array%' or title like '%array%' or tags like '%array%'"
-//				+ "or body like '%print%' or title like '%print%' or tags like '%print%');";
-//		String SQLString = "SELECT * FROM postFacetType, testposts where postFacetType.PostId = testposts.Id and (body like '%connect%' or title like '%connect%' or tags like '%connect%'"
-//				+ "or body like '%mysql%' or title like '%mysql%' or tags like '%mysql%'"
-//				+ "or body like '%database%' or title like '%database%' or tags like '%database%');";
-		String SQLString = "SELECT * FROM postFacetType, testposts where postFacetType.PostId = testposts.Id and (body like '%findbugs%' or title like '%findbugs%' or tags like '%findbugs%'"
-				+ "or body like '%configuration%' or title like '%configuration%' or tags like '%configuration%');";
-		
-		try {
-		    try {
-				stat = conn.createStatement();
-				ResultSet rs = stat.executeQuery(SQLString);
-//				posts = constructedPostList(rs);
-				int id=0;
-					while (rs.next()) {
-						//comment Attribute;
-						int postId = rs.getInt("PostId");
-						String focus = rs.getString("Focus");
-						String system = rs.getString("System");
-						String language = rs.getString("Lan");
-						int post_typeId = 1;
-						String post_title = rs.getString("title");
-						System.out.println(post_title);
-
-						String post_body = rs.getString("body");
-
-						String post_tag = rs.getString("tags");
-						int post_comment_count = rs.getInt("CommentCount");//may be null
-						//Answer Attribute;
-						int parentId = rs.getInt("parentID");//may be null
-						//Question Attribute;
-						int post_answer_count = rs.getInt("AnswerCount");//may be null
-						int accepted_answerId = rs.getInt("AcceptedAnswerId");//may be null
-
-//						if(!FilterPost.FilterAnswerCount(post_answer_count))
-//							continue;
-//						FilterPost.setFilterTag("mysql");
-//						if(!FilterPost.FilterTag(post_tag))
-//							continue;
-
-						Question question = new Question(postId,post_title,post_body,post_tag,post_comment_count
-								,parentId,post_answer_count,accepted_answerId,focus,system,language);
-//							//generate commentList and AnswerList 
-//							if(question.getPost_comment_count()>0)
-//								question.setCommentList(this.findRelatedComments(question.getPostId()));
-//							if(question.getPost_answer_count()>0)
-//								question.setAnswerList(this.findRelatedAnswers(question.getPostId()));
-							Global.intList.add(postId);
-							id++;
-							posts.add(question);
-							
-//							//generate commentList and parent Question 
-//							if(answer.getPost_comment_count()>0)
-//								answer.setCommentList(this.findRelatedComments(answer.getPostId()));
-//							if(answer.getParentId()>0)
-//								answer.setParent_question(this.findRelatedQuestion(answer.getParentId()));
-					}
-				    System.out.println(id);
-
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} finally {
-			DBConnection.close(conn);
-			try {
-				stat.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		System.out.println(posts.size());
-		return posts;
-	}*/
-	
-//	public void insertSqlite(List<Post> list)
-//	{
-//		Connection conn = null;
-//		Statement stat = null;
-//		try {
-//			conn = DBConnection.getConnectio();
-//			stat = conn.createStatement();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		int typeId = 1;
-//		int answerCount = 0;
-//		int commentCount = 0;
-//		
-//		try {
-//			for(Post post:list)
-//			{
-//				String body = post.post_body.replace("'", "");
-//				String title = post.post_title.replace("'", "");
-//				String tag = post.post_tag.replace("'", "");
-//			   String sql = "insert into testposts values("+post.postId+","+typeId+","+
-//			  post.accepted_answerId+","+post.parentId+",'"+body+"','"+title+"','"+
-//					   post.post_tag+"',"+answerCount+","+commentCount+");";
-//			   stat.execute(sql);
-//			}
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
-	
-//	public void insertPostFacetType()
-//	{
+//			                 if(titleBody!=null)
+//			                    title = titleBody; 
 //	
-//		Connection connsql = null;
-//		Statement statsql = null;
-//		try {
-//			connsql = DBConnection.getConnectio();
-//			statsql = connsql.createStatement();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+//			                 tagBody = highlighter.getBestFragment(analyzer.tokenStream("token", tag), tag);
+//			                    
+//			                 if(tagBody!=null)
+//			                    tag = tagBody;
 //
-//		String SQLString = "SELECT * FROM stackoverflowdata.postFacetType;";
-//		Connection conn = null;
-//		PreparedStatement pstmt = null;
-//		try {
-//			conn = DBConnection.getConnection();
-//			pstmt = null;
-//			pstmt = conn.prepareStatement(SQLString);
-//			ResultSet rs = pstmt.executeQuery();
-//			while(rs.next())
-//			{
-//				int id = rs.getInt("Id");
-//				int postId = rs.getInt("PostId");
-//				int PostTypeId = rs.getInt("PostTypeId");
-//				String Focus = rs.getString("Focus");
-//				String System = rs.getString("System");
-//				String Lan = rs.getString("Language");
-//				String Tag = "";
-//				String sql = "insert into postFacetType values("+id+","+postId+","+PostTypeId+",'"+
-//				Focus+"','"+System+"','"+Lan+"','"+Tag+"');";
-//				statsql.execute(sql);
-//				
-//			}
-//		} catch (Exception ex) {
-//			System.out.println("Error : " + ex.toString());
-//		} finally {
-//			DBConnection.close(conn);
-//			DBConnection.close(pstmt);
-//		}
-//	}
+//						    post = new Post(id,title,body,tag);
+//							post.setFacetName(document.get("Concern"), document.get("System"), document.get("Language"), document.get("Development"),
+//								document.get("Framework"),document.get("Database"),document.get("Technology"));	
+//						    post.setAnaser(sortAnswer(findPostRelatedAnswers(id,searcherPost)));
+//
+//						    postList.add(post);
+//					    }
+//								 
+//				    }
+//			     }		    
+            }
 
-	
-	public static void main(String args[]) throws Exception
-	{
-		List<CodeResult> postList = null;
-		PostDAOImpl pdi = new PostDAOImpl();
-		postList= pdi.findPosts("a");
-		for(CodeResult cr: postList)
-			System.out.println(cr.getTitle());
-	}
+
+            if (tempPostList != null && tempPostList.size() != 0) {
+                sat[numIndex] = new searchAnswerThread(tempPostList, searcherPost, highlighter, analyzer);
+                t[numIndex] = new Thread(sat[numIndex]);
+                t[numIndex].start();
+                num = 0;
+                numIndex++;
+            }
+//			readerAnswer.close();
+//			dirAnswer.close();
+            for (int i = 0; i < numIndex; i++) {
+                t[i].join();
+                postList.addAll(sat[i].getPost());
+            }
+
+
+        } catch (IOException e2) {
+            // TODO Auto-generated catch block
+            e2.printStackTrace();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            try {
+
+                reader.close();
+                dirPost.close();
+
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return postList;
+    }
+
+    public boolean iS(List<CodeResult> postList, String postId) {
+        for (CodeResult post : postList) {
+            if (postId.equals(post.getId()))
+                return false;
+        }
+        return true;
+    }
+
+    public boolean filter(Document document) {
+        answerCount = document.get("AnswerCount");
+        score = Integer.parseInt(document.get("Score"));
+        if (answerCount.equals("0") || (score < 0))
+            return false;
+        return true;
+    }
+
+
+    @Override
+    public List<Post> findPosts() throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public static String processJSPSpecialChar(String string) {
+        return string.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("\'", "\\'");
+    }
+
+
+    public List<Answer> findPostRelatedAnswers(int postId, IndexSearcher searcherPost) {
+        answerList.clear();
+        TopDocs postFacetDoc;
+        try {
+            postFacetDoc = searcherPost.search(NumericRangeQuery.newIntRange("ParentId", postId, postId, true, true), 20);
+
+            for (ScoreDoc d : postFacetDoc.scoreDocs) {
+                Document document = searcherPost.doc(d.doc);
+                score = Integer.parseInt(document.get("Score"));
+                if (score < 0)
+                    continue;
+                body = document.get("Body");
+                Answer answer = new Answer(score, body);
+                answerList.add(answer);
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return answerList;
+
+
+    }
+
+    public List<Answer> sortAnswer(List<Answer> answerList) {
+        goodAnswerList.clear();
+        Collections.sort(answerList, new Comparator<Answer>() {
+            public int compare(Answer o1, Answer o2) {
+                int result = o2.getScore() - o1.getScore();
+                return result;
+            }
+        });
+        size = answerList.size();
+        if (size >= 3)
+            size = 3;
+        for (int j = 0; j < size; j++) {
+            Answer answer = answerList.get(j);
+            body = answer.getBody();
+            tempBody = "";
+            try {
+                count = body.length() / 100;
+                for (int i = 0; i < count; i++) {
+                    splitBody = body.substring(i * 100, (i + 1) * 100);
+
+                    highterBody = highlighter.getBestFragment(analyzer.tokenStream("token", splitBody), splitBody);
+                    if (highterBody == null)
+                        tempBody += splitBody;
+                    else
+                        tempBody += highterBody;
+                }
+                splitBody = body.substring(count * 100, body.length());
+                highterBody = highlighter.getBestFragment(analyzer.tokenStream("token", splitBody), splitBody);
+                if (highterBody == null)
+                    tempBody += splitBody;
+                else
+                    tempBody += highterBody;
+                body = tempBody;
+                answer.setBody(body);
+            } catch (IOException e2) {
+                // TODO Auto-generated catch block
+                e2.printStackTrace();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            goodAnswerList.add(answer);
+        }
+        return goodAnswerList;
+    }
+
+
+    @Override
+    public List<CodeResult> findPosts(String keyword) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public static void main(String args[]) throws Exception {
+        List<CodeResult> postList = null;
+//	    System.out.println("time1:"+new Date(System.currentTimeMillis())); 
+//		PostDAOImpl pdi = new PostDAOImpl();
+//		How,connect,mysql,
+//		how,connect,mysql
+//		postList = pdi.findPostFromLuceneAndDatabase("java,array,");
+//		System.out.println(postList.size());
+//	    System.out.println("time2:"+new Date(System.currentTimeMillis())); 
+
+    }
+
 }

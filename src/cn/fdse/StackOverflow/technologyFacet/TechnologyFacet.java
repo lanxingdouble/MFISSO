@@ -29,6 +29,8 @@ public class TechnologyFacet implements ModuleProvider {
 				int index = tech.lastIndexOf("-");
 				if(index!=-1)
 					tech = tech.substring(index+1,tech.length());
+				if(tech.equals("Others"))
+					continue;
 				if(facetMap.containsKey(tech))
 				{
 					facetMap.get(tech).add(post);				
@@ -42,7 +44,7 @@ public class TechnologyFacet implements ModuleProvider {
 			}
 		}
 		
-		focusFacet TECHNOLOGY = new focusFacet("Technology");
+		focusFacet TECHNOLOGY = new focusFacet("Library and Software Technology");
 		Iterator iter = facetMap.entrySet().iterator();
 		while (iter.hasNext()) {
 		   Map.Entry entry = (Map.Entry) iter.next();

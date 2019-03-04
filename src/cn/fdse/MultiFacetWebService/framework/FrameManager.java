@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+//import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+//import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,6 +17,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import cn.fdse.MultiFacetWebService.framework.util.InitAssistant;
+import cn.fdse.StackOverflow.searchModule.util.Global;
 import cn.fdse.codeSearch.openInterface.module.ClassificationList;
 import cn.fdse.codeSearch.openInterface.module.ModuleProvider;
 import cn.fdse.codeSearch.openInterface.searchInput.UserInput;
@@ -47,7 +50,8 @@ public class FrameManager implements Constant{
 		searchers = new ArrayList<Class<?>>();
 		modules = new ArrayList<Class<?>>();
 	}
-	
+
+
 	public FrameSession run(UserInput ui){
 		FrameSession fi = new FrameSession();
 		fi.dataMap = dataMap;
@@ -55,16 +59,47 @@ public class FrameManager implements Constant{
 		List<CodeResult> resultList = new ArrayList<CodeResult>();
 		try {
 			for(Class<?> c:searchers){
+
+//				Date date = new Date();  
+//				SimpleDateFormat sdf = new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS");  
+//			    System.out.println("serchData:"+sdf.format(date)); 
+
 				Object obj = c.newInstance();
 				SearchProvider p = (SearchProvider) obj;
 				resultList.addAll(p.getResultOf(ui, dataMap));
+				
+				
+				
+//				Date date2 = new Date();  
+//				SimpleDateFormat sdf2 = new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS");  	      
+//				 System.out.println("serchData:"+sdf2.format(date2)); 
+
+
 			}
+
+
+			int id = 0;
+			Global.idFacetName.clear();
+//			Date date3 = new Date();  
+//			SimpleDateFormat sdf3 = new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS");  	      
+//			 System.out.println("addFacet1:"+sdf3.format(date3)); 
 			for(Class<?> c:modules){
+
 				Object obj = c.newInstance();
 				ModuleProvider p = (ModuleProvider) obj;
+//			    System.out.println("processData:"+new Date(System.currentTimeMillis())); 
 				fi.addModuleProvider(p);
-				ret.add(p.analysis(resultList, dataMap));
+				ClassificationList classification = p.analysis(resultList, dataMap);
+				Global.idFacetName.put("Facet:"+id, classification.getTitle());
+				id++;
+//			    System.out.println("processData:"+classification.getTitle()+new Date(System.currentTimeMillis())); 
+				ret.add(classification);
+
 			}
+//			Date date4 = new Date();  
+//			SimpleDateFormat sdf4 = new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS");  	      
+//			 System.out.println("addFacet:"+sdf4.format(date4)); 
+
 			
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
@@ -88,7 +123,6 @@ public class FrameManager implements Constant{
 		//get path in configure file.
 		String path = configPath+fileName;
 		String modPath = configPath+"mods";
-		
 		List<String> pathList = new ArrayList<String>();
 		pathList.add(modPath);
 		
@@ -155,7 +189,6 @@ public class FrameManager implements Constant{
 				        // Skip if the file is not a jar
 				        if (!mods[i].getName().endsWith(".jar"))
 				            continue;
-				        
 				        // Create a JarFile
 //				        @SuppressWarnings("resource")
 						JarFile jarFile = new JarFile(mods[i]);
@@ -183,7 +216,6 @@ public class FrameManager implements Constant{
 				            
 				            // Load the class
 				            Class<?> c = cl.loadClass(className);
-				            
 				            check(c);
 				        }
 				        jarFile.close();
@@ -201,7 +233,7 @@ public class FrameManager implements Constant{
 		}
 
 		private void check(Class<?> c) throws IllegalAccessException {
-			
+
 			if(c.isInterface())
 				return;
 			

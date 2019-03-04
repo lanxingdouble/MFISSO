@@ -1,57 +1,58 @@
-package cn.fdse.StackOverflow.focusFacet;
+package cn.fdse.StackOverflow.frameworkFacet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import cn.fdse.codeSearch.openInterface.module.Classification;
 import cn.fdse.codeSearch.openInterface.module.ClassificationList;
 import cn.fdse.codeSearch.openInterface.module.ModuleProvider;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
 
-public class Focus implements ModuleProvider {
+public class frameworkFacet implements ModuleProvider {
 
 	@Override
 	public ClassificationList analysis(List<CodeResult> postList,
 			Map<String, Object> dataMap) {
 		// TODO Auto-generated method stub	
 		HashMap<String,List<CodeResult>> facetMap = new HashMap<String,List<CodeResult>>();
+		
 		for(CodeResult post:postList)
 		{
-			String focusSet = post.getFocus();
-			if(focusSet == null)
+			String componentSet = post.getComponent();
+			if(componentSet == null)
 				continue;
-			String[] focus = focusSet.split(",");
-			for(String foc:focus)
+			String[] component = componentSet.split(",");
+			for(String com:component)
 			{
-				int index = foc.lastIndexOf("-");
+				int index = com.lastIndexOf("-");
 				if(index!=-1)
-					foc = foc.substring(index+1,foc.length());
-				if(facetMap.containsKey(foc))
+					com = com.substring(index+1,com.length());
+				if(com.equals("Others"))
+					continue;
+				if(facetMap.containsKey(com))
 				{
-					facetMap.get(foc).add(post);				
+					facetMap.get(com).add(post);				
 				}
 				else
 				{
 					List<CodeResult> list = new ArrayList<CodeResult>();
 					list.add(post);
-					facetMap.put(foc, list);
+					facetMap.put(com, list);
 				}
 			}
 		}
 		
-		focusFacet FOCUS = new focusFacet("Focus");
+		focusFacet COMPONENT = new focusFacet("Middleware and Framework");
 		Iterator iter = facetMap.entrySet().iterator();
 		while (iter.hasNext()) {
 		   Map.Entry entry = (Map.Entry) iter.next();
 		   FocusItem item = new FocusItem((String) entry.getKey(),(List<CodeResult>)entry.getValue());
-		   FOCUS.classifications.add(item);
+		   COMPONENT.classifications.add(item);
 		}
 		
-		return FOCUS;
+		return COMPONENT;
 	}
 
 	@Override

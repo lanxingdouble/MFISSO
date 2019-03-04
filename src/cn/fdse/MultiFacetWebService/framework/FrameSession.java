@@ -32,6 +32,7 @@ public class FrameSession {
 			if(p.needSpecialRefine()){
 				ret.add(p.refine(refinedList, dataMap));
 			}else{
+				
 				ret.add(p.analysis(refinedList, dataMap));
 			}
 		}
@@ -41,13 +42,16 @@ public class FrameSession {
 	}
 	
 	public void refine(String listData){
-		System.out.println(listData);
+//		System.out.println(listData);
 		if(resultMap == null) buildResultMap();
-		Set<CodeResult> refinedSet = new HashSet<CodeResult>();
+		List<String> list = new ArrayList<String>();
+		List<CodeResult> refinedSet = new ArrayList<CodeResult>();
+//		Set<CodeResult> refinedSet = new HashSet<CodeResult>();
 		String[] ids = listData.split(";");
 		for(String id:ids){
-			if(id.length()==0)
+			if(id.length()==0||list.contains(id))
 				continue;
+		    list.add(id);
 			CodeResult cr = resultMap.get(id);
 			if(cr==null){
 				System.out.println("null::"+id);

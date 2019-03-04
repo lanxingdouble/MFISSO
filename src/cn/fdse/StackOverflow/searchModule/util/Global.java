@@ -46,6 +46,15 @@ public class Global {
 	public static String deny = "DENY";
 	
     public static List<Integer> intList = new ArrayList<Integer>();
-
+    
+    public static HashMap<String,String> idFacetName = new HashMap<String,String>();
+    
+    public static String syspath = "";
+    
+    public static String userId = "";
+    
+    
+    public static List<String> titleL = new ArrayList<String>();
+    
 
 }

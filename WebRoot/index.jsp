@@ -19,11 +19,16 @@
 			</a>
 		</div>
 		<div class="index_form">
-			<form id="form1" method="post" action="SearchServlet">
+			<form id="form1" method="post" action="SearchServlet" onsubmit = "return checkUser();">
+				<div class="header_input">
+					<input name="userid" type="text" class="header_input_txt" id="useridfield"
+						size="30" maxlength="1000" placeholder="please input your user id"/>
+					<button id="hidden_button" class="hidden_btn" disabled="true"/>
+				</div>
 				<div class="header_input">
 					<input name="formTag" type="hidden" value="search"></input>
 					<input name="q" type="text" class="header_input_txt" id="textfield"
-						size="30" maxlength="50" />
+						size="30" maxlength="1000" />
 					<button id="search" class="search_btn"
 						onmouseout="this.className='search_btn'"
 						onmouseover="this.className='search_btn search_btn_hover'" />
@@ -32,5 +37,16 @@
 			</form>
 		</div>
 	</div>
+	<script type="text/javascript">
+		function checkUser(){
+		   var result = document.getElementById("useridfield").value;
+		   if(result == ""){
+		     alert("The user id cannot be null.");
+		     return false;
+		   }else{
+		   return true;
+		   }
+		}
+	</script>
 </body>
 </html>

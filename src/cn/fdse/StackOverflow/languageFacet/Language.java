@@ -28,6 +28,8 @@ public class Language implements ModuleProvider {
 				int index = lang.lastIndexOf("-");
 				if(index!=-1)
 					lang = lang.substring(index+1,lang.length());
+				if(lang.equals("Others")||lang.equals(" Language Features"))
+					continue;
 				if(facetMap.containsKey(lang))
 				{
 					facetMap.get(lang).add(post);				
