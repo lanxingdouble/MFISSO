@@ -401,8 +401,7 @@
                                                         onclick="showStackoverflowPage('<%=cr.getId()%>','<%=cr.getTitle().replace("<font color='red'>","").replace("</font>","").replace("'","")%>');"><%=cr.getTitle()%>
                         </a>
                         </h3>
-                        <div class="post-text itemprop=" text
-                        ">
+                        <div class="post-text itemprop=" text">
                         <%=cr.getBody() %>
                     </div>
                     <div class="s">

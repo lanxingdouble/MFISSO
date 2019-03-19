@@ -53,7 +53,7 @@ public class Global {
     
     public static String userId = "";
     
-    
+    public static String root_path="E:\\MFISSO\\StackOverflow Search Tool code\\MFISSO WEB\\";
     public static List<String> titleL = new ArrayList<String>();
     
 

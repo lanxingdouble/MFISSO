@@ -6,12 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import cn.fdse.MultiFacetWebService.framework.FrameManager;
 import cn.fdse.MultiFacetWebService.framework.FrameResult;
 import cn.fdse.MultiFacetWebService.framework.FrameSession;
@@ -49,10 +47,12 @@ public class SearchServlet extends HttpServlet {
 		FrameManager fm = null;
 		if((fm = FrameManager.getSingleton())==null){
 			String sysPath = this.getServletConfig().getServletContext().getRealPath("WEB-INF")+File.separator;
+			System.out.println("+++++++++++++++:"+sysPath);
 	        String initFile = "config.ini";
 	        fm = FrameManager.getSingleton(sysPath, initFile);
 	        Global.syspath = sysPath;
 	        String userId = request.getParameter("userid");
+			System.out.println("+++++++++++++++ userid:"+userId);
 			Global.userId = userId;
 	        
  		}
@@ -61,10 +61,12 @@ public class SearchServlet extends HttpServlet {
 		
 		
 		String formTag = request.getParameter("formTag");
+		System.out.println("+++++++++++++++ formTag:"+formTag);
 		if("search".equals(formTag)){
 			
 //			OperationProcess.getInstance().outPut();
 //			OperationProcess.getInstance().initProcessData();
+			System.out.println("formtag search!!!!!!!!");
 			OperationProcess op;
 			List<String> facetList = new ArrayList<String>();
 			op = (OperationProcess)request.getSession().getAttribute("OperationProcess");
@@ -76,10 +78,11 @@ public class SearchServlet extends HttpServlet {
 			op = new OperationProcess(facetList);
 			request.getSession().setAttribute("OperationProcess", op);
 			String keywords = request.getParameter("q");
+			System.out.println("+++++++++++++++ query keywords:"+keywords);
 			FrameSession fs = fm.run(keywords);
+			System.out.println("+++++++++++++++++++++++++++");
 			op.setProcessData("Keywords:"+keywords);
 			setPageData(fs.getFrameResult(), request);
-			
 			request.getSession().setAttribute("FrameSession", fs);
 			request.getSession().setAttribute("Keyword", keywords);
 			System.out.println("search done");
@@ -88,9 +91,7 @@ public class SearchServlet extends HttpServlet {
 			String updateString = request.getParameter("updateData");
 			FrameSession fs = (FrameSession) request.getSession().getAttribute("FrameSession");
 			fs.refine(updateString);
-			
 			setPageData(fs.getFrameResult(), request);
-			
 		}
 
 //		{
@@ -99,6 +100,7 @@ public class SearchServlet extends HttpServlet {
 //			request.getSession().setAttribute("facetIds", new ArrayList<String>());
 //			request.getSession().setAttribute("titles", new ArrayList<String>());
 //		}
+		//服务器内部跳转，地址栏不变
 		request.getRequestDispatcher("/search.jsp").forward(request, response);
 	
 	}

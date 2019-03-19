@@ -5,16 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-
-
-
-
-
-
-
-
-
-
+import cn.fdse.NewInputHandle.InputTextRank;
 import cn.fdse.StackOverflow.searchModule.util.Global;
 import cn.fdse.StackOverflow.searchModule.util.PostDAOImpl;
 import cn.fdse.StackOverflow.translation.BaiDuTranslator;
@@ -29,7 +20,7 @@ public class SerarchResult implements SearchProvider{
 	protected String keywords = null;
 	protected List<CodeResult> codeResultList = null;
 
-	PostDAOImpl pdi = new PostDAOImpl("H:\\MySqlDatabase\\MySQLIndex\\");
+	PostDAOImpl pdi = new PostDAOImpl("E:\\MFISSO\\StackOverflow Search Tool code\\");
 //	PostDAOImpl pdi = new PostDAOImpl("H:\\");
 
 //	PostDAOImpl pdi = new PostDAOImpl(Global.syspath);
@@ -62,21 +53,23 @@ public class SerarchResult implements SearchProvider{
 		
 	
 		keywords = ui.getKeyWords();
-//		System.out.println("ww:"+keywords);
+ 		System.out.println("ww:"+keywords);
 		
 		keywords = keywords.replace("O(", "").replace(".", " ").replace("(", "").replace(")", "");
 //		System.out.println("jqt:"+keywords);
 //		keywords = trans.getResult(keywords);
 //		System.out.println(keywords);
-		
+		//对query去除停用词
+
+        InputTextRank input_text=new InputTextRank();
 		keywords = fsw.getStringWithoutStopWord(keywords);	
-		
+		keywords =input_text.handleInput(keywords);
 //		keywords = rsws.removeStopWordAndStemm(keywords);
-		
+		System.out.println("---------start print key word---------");
 		System.out.println(keywords);
 //		System.out.println("keword:"+keywords);
 		
-		List<CodeResult> postList = pdi.findPostFromLuceneAndDatabase(keywords);
+ 		List<CodeResult> postList = pdi.findPostFromLuceneAndDatabase(keywords);
 //		 List<CodeResult> postList = new ArrayList<CodeResult>();
 
 		return postList;

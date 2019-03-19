@@ -96,10 +96,9 @@ public class PostDAOImpl implements PostDAO {
 
             dirPost = FSDirectory.open(file);
 //			 dirAnswer = FSDirectory.open(fileAnswer);
-
+            System.out.println("---------------------data dir:" + dirPost);
             reader = DirectoryReader.open(dirPost);// 读取目录
 //             readerAnswer = DirectoryReader.open(dirAnswer);
-
             searcherPost = new IndexSearcher(reader);
 //			 searchAnswer = new IndexSearcher(readerAnswer);
             formatter = new SimpleHTMLFormatter("<font color='red'>", "</font>");
@@ -152,7 +151,10 @@ public class PostDAOImpl implements PostDAO {
 
         try {
             docsPost = searcherPost.search(booleanQuery, 200);
-
+            System.out.println("---------booleanQuery----------");
+            System.out.println(booleanQuery);
+            System.out.println("---------docsPost--------------");
+            System.out.println(docsPost);
             queryScorer = new QueryScorer(booleanQuery);
 
             highlighter = new Highlighter(formatter, queryScorer);
@@ -165,9 +167,7 @@ public class PostDAOImpl implements PostDAO {
                 highterBody = "";
                 titleBody = "";
                 tagBody = "";
-
                 document = searcherPost.doc(doc.doc);
-
                 postTypeId = document.get("postTypeId");
                 parentId = document.get("ParentId");
                 postId = document.get("postId");
@@ -183,8 +183,6 @@ public class PostDAOImpl implements PostDAO {
                     count = body.length() / 100;
                     for (int i = 0; i < count; i++) {
                         splitBody = body.substring(i * 100, (i + 1) * 100);
-
-
                         highterBody = highlighter.getBestFragment(analyzer.tokenStream("token", splitBody), splitBody);
 
                         if (highterBody == null)
@@ -210,9 +208,7 @@ public class PostDAOImpl implements PostDAO {
                     if (titleBody != null)
                         title = titleBody;
 
-
                     tagBody = highlighter.getBestFragment(analyzer.tokenStream("token", tag), tag);
-
 
                     if (tagBody != null)
                         tag = tagBody;

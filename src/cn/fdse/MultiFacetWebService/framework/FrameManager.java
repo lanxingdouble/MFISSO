@@ -1,13 +1,22 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by Fernflower decompiler)
+//
+
 package cn.fdse.MultiFacetWebService.framework;
 
+import cn.fdse.MultiFacetWebService.framework.util.InitAssistant;
+import cn.fdse.StackOverflow.searchModule.util.Global;
+import cn.fdse.codeSearch.openInterface.module.ClassificationList;
+import cn.fdse.codeSearch.openInterface.module.ModuleProvider;
+import cn.fdse.codeSearch.openInterface.searchInput.UserInput;
+import cn.fdse.codeSearch.openInterface.searchResult.SearchProvider;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
-//import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-//import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,246 +25,200 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import cn.fdse.MultiFacetWebService.framework.util.InitAssistant;
-import cn.fdse.StackOverflow.searchModule.util.Global;
-import cn.fdse.codeSearch.openInterface.module.ClassificationList;
-import cn.fdse.codeSearch.openInterface.module.ModuleProvider;
-import cn.fdse.codeSearch.openInterface.searchInput.UserInput;
-import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
-import cn.fdse.codeSearch.openInterface.searchResult.SearchProvider;
-
-public class FrameManager implements Constant{
-	
+public class FrameManager implements Constant {
 	private List<Class<?>> searchers = null;
 	private List<Class<?>> modules = null;
-	private Map<String, Object> dataMap = 
-			new HashMap<String, Object>();
-	
+	private Map<String, Object> dataMap = new HashMap();
 	private static FrameManager singleton = null;
-	public static FrameManager getSingleton(){
-		
+
+	public static FrameManager getSingleton() {
 		return singleton;
 	}
-	
-	public static FrameManager getSingleton(String configPath, String fileName){
-		if(singleton != null){
-		}else{
+
+	public static FrameManager getSingleton(String configPath, String fileName) {
+		if (singleton == null) {
 			singleton = new FrameManager();
 			singleton.initModules(configPath, fileName);
 		}
+
 		return singleton;
 	}
-	
-	private FrameManager(){
-		searchers = new ArrayList<Class<?>>();
-		modules = new ArrayList<Class<?>>();
+
+	private FrameManager() {
+		this.searchers = new ArrayList();
+		this.modules = new ArrayList();
 	}
 
-
-	public FrameSession run(UserInput ui){
+	public FrameSession run(UserInput ui) {
+		System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 		FrameSession fi = new FrameSession();
-		fi.dataMap = dataMap;
-		List<ClassificationList> ret = new ArrayList<ClassificationList>();
-		List<CodeResult> resultList = new ArrayList<CodeResult>();
+        System.out.println("**********************************1");
+		fi.dataMap = this.dataMap;
+		List<ClassificationList> ret = new ArrayList();
+        System.out.println("**********************************2");
+		ArrayList resultList = new ArrayList();
+
 		try {
-			for(Class<?> c:searchers){
-
-//				Date date = new Date();  
-//				SimpleDateFormat sdf = new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS");  
-//			    System.out.println("serchData:"+sdf.format(date)); 
-
+			Iterator var6 = this.searchers.iterator();
+            System.out.println("**********************************3");
+			while (var6.hasNext()) {
+				Class<?> c = (Class) var6.next();
+                System.out.println("**********************************4");
 				Object obj = c.newInstance();
+                System.out.println("**********************************5");
 				SearchProvider p = (SearchProvider) obj;
-				resultList.addAll(p.getResultOf(ui, dataMap));
-				
-				
-				
-//				Date date2 = new Date();  
-//				SimpleDateFormat sdf2 = new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS");  	      
-//				 System.out.println("serchData:"+sdf2.format(date2)); 
-
-
+                System.out.println("**********************************6");
+				resultList.addAll(p.getResultOf(ui, this.dataMap));
+                System.out.println("**********************************7");
 			}
-
 
 			int id = 0;
 			Global.idFacetName.clear();
-//			Date date3 = new Date();  
-//			SimpleDateFormat sdf3 = new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS");  	      
-//			 System.out.println("addFacet1:"+sdf3.format(date3)); 
-			for(Class<?> c:modules){
-
+			Iterator var16 = this.modules.iterator();
+            System.out.println("**********************************8");
+			while (var16.hasNext()) {
+				Class<?> c = (Class) var16.next();
 				Object obj = c.newInstance();
 				ModuleProvider p = (ModuleProvider) obj;
-//			    System.out.println("processData:"+new Date(System.currentTimeMillis())); 
 				fi.addModuleProvider(p);
-				ClassificationList classification = p.analysis(resultList, dataMap);
-				Global.idFacetName.put("Facet:"+id, classification.getTitle());
-				id++;
-//			    System.out.println("processData:"+classification.getTitle()+new Date(System.currentTimeMillis())); 
+                System.out.println("**********************************9");
+				ClassificationList classification = p.analysis(resultList, this.dataMap);
+				Global.idFacetName.put("Facet:" + id, classification.getTitle());
+				++id;
 				ret.add(classification);
-
 			}
-//			Date date4 = new Date();  
-//			SimpleDateFormat sdf4 = new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS");  	      
-//			 System.out.println("addFacet:"+sdf4.format(date4)); 
-
-			
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (InstantiationException var11) {
+			var11.printStackTrace();
+		} catch (IllegalAccessException var12) {
+			var12.printStackTrace();
 		}
+
 		FrameResult fr = new FrameResult();
-		
 		fr.facets = ret;
 		fr.results = resultList;
-		
 		fi.setAllResult(resultList);
 		fi.fr = fr;
-		
 		return fi;
 	}
-	
-	public void initModules(String configPath, String fileName){
-		//get path in configure file.
-		String path = configPath+fileName;
-		String modPath = configPath+"mods";
-		List<String> pathList = new ArrayList<String>();
-		pathList.add(modPath);
-		
-		String paths = InitAssistant.getInstance(path)
-				.getValue(systemConfig, modPath, null);
 
-		//
-		initModsConfigure(configPath);
-		
-		if(paths!=null){
-			String[] pathArray = paths.split(pathSplit);
-			for(String p:pathArray){
+	public void initModules(String configPath, String fileName) {
+		String path = configPath + fileName;
+		String modPath = configPath + "mods";
+		List<String> pathList = new ArrayList();
+		pathList.add(modPath);
+		String paths = InitAssistant.getInstance(path).getValue("system", modPath, (String) null);
+		this.initModsConfigure(configPath);
+		if (paths != null) {
+			String[] pathArray = paths.split(";");
+			String[] var11 = pathArray;
+			int var10 = pathArray.length;
+
+			for (int var9 = 0; var9 < var10; ++var9) {
+				String p = var11[var9];
 				pathList.add(p);
 			}
 		}
-		
-		ModsLoader ml = new ModsLoader(pathList, this);
+
+		FrameManager.ModsLoader ml = new FrameManager.ModsLoader(pathList, this);
 		ml.loadMods();
 	}
+
 	private void initModsConfigure(String sysPath) {
-		dataMap.put(systemPath, sysPath);
-		Map<String, String> properties = InitAssistant
-				.getInstance().getValues(propertiesTage);
-		for(Iterator<String> iter=properties.keySet().iterator();iter.hasNext();){
-			String keyStr = iter.next();
-			dataMap.put(keyStr, properties.get(keyStr));
-		}
-	}
+		this.dataMap.put("frame.workDir", sysPath);
+		Map<String, String> properties = InitAssistant.getInstance().getValues("mod_properties");
+		Iterator iter = properties.keySet().iterator();
 
-	class ModsLoader {
-
-		private List<String> loadPaths = null;
-		private FrameManager fm = null;
-		
-		public ModsLoader(){
-			
-		}
-		
-		public ModsLoader(List<String> paths, FrameManager fm){
-			loadPaths = paths;
-			this.fm = fm;
-		}
-		
-		public void loadStaticMods(){
-//			Class<CodesearchDownloadManager> sc = 
-//					CodesearchDownloadManager.class;
-//			this.fm.searchers.add(sc);
-//			Class<ClusterModule> mc = ClusterModule.class;
-//			this.fm.modules.add(mc);
-		}
-		
-		public void loadMods(){
-			for(String path:loadPaths){
-				
-				File dir = new File(path);
-				if(!dir.exists() || !dir.isDirectory())
-					continue;
-				
-				// Get all the files in mod folder
-			    File[] mods = dir.listFiles();
-
-			    try{
-				    for (int i=0; i<mods.length; i++){
-				        // Skip if the file is not a jar
-				        if (!mods[i].getName().endsWith(".jar"))
-				            continue;
-				        // Create a JarFile
-//				        @SuppressWarnings("resource")
-						JarFile jarFile = new JarFile(mods[i]);
-	
-				        // Get the entries
-				        Enumeration<?> e = jarFile.entries();
-	
-				        // Create a URL for the jar
-				        URL[] urls = { new URL("jar:file:" + mods[i].getAbsolutePath() +"!/") };
-				        URLClassLoader cl = URLClassLoader.newInstance(
-				        		urls, Thread.currentThread().getContextClassLoader());
-	
-				        while (e.hasMoreElements()){
-				            JarEntry je = (JarEntry) e.nextElement();
-	
-				            // Skip directories
-				            if(je.isDirectory() || !je.getName().endsWith(".class")){
-				                continue;
-				            }
-	
-				            // -6 because of .class
-				            String className = je.getName().substring(0,je.getName().length()-6);
-				            className = className.replace('/', '.');
-//	System.out.println(className);
-				            
-				            // Load the class
-				            Class<?> c = cl.loadClass(className);
-				            check(c);
-				        }
-				        jarFile.close();
-				    }
-			    }catch(IOException e){
-			    	e.printStackTrace();
-			    } catch (ClassNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IllegalAccessException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
+		while (iter.hasNext()) {
+			String keyStr = (String) iter.next();
+			this.dataMap.put(keyStr, properties.get(keyStr));
 		}
 
-		private void check(Class<?> c) throws IllegalAccessException {
-
-			if(c.isInterface())
-				return;
-			
-			//check whether it is abstractive
-			if(Modifier.isAbstract(c.getModifiers())){
-				return;
-			}
-			
-			if(SearchProvider.class.isAssignableFrom(c)){
-				this.fm.searchers.add(c);
-			}
-			if(ModuleProvider.class.isAssignableFrom(c)){
-				this.fm.modules.add(c);
-			}
-		}
 	}
 
 	public FrameSession run(String keywords) {
 		FrameUserInput fui = new FrameUserInput(keywords);
 		fui.addProperty("downloadLimit", "l");
 		fui.addProperty("accountLimit", "20");
-		return run(fui);
+		return this.run((UserInput) fui);
 	}
-	
+
+	class ModsLoader {
+		private List<String> loadPaths = null;
+		private FrameManager fm = null;
+
+		public ModsLoader() {
+		}
+
+		public ModsLoader(List<String> paths, FrameManager fm) {
+			this.loadPaths = paths;
+			this.fm = fm;
+		}
+
+		public void loadStaticMods() {
+		}
+
+		public void loadMods() {
+			Iterator var2 = this.loadPaths.iterator();
+
+			while (true) {
+				File dir;
+				do {
+					do {
+						if (!var2.hasNext()) {
+							return;
+						}
+
+						String path = (String) var2.next();
+						dir = new File(path);
+					} while (!dir.exists());
+				} while (!dir.isDirectory());
+
+				File[] mods = dir.listFiles();
+
+				try {
+					for (int i = 0; i < mods.length; ++i) {
+						if (mods[i].getName().endsWith(".jar")) {
+							JarFile jarFile = new JarFile(mods[i]);
+							Enumeration<?> e = jarFile.entries();
+							URL[] urls = new URL[]{new URL("jar:file:" + mods[i].getAbsolutePath() + "!/")};
+							URLClassLoader cl = URLClassLoader.newInstance(urls, Thread.currentThread().getContextClassLoader());
+
+							while (e.hasMoreElements()) {
+								JarEntry je = (JarEntry) e.nextElement();
+								if (!je.isDirectory() && je.getName().endsWith(".class")) {
+									String className = je.getName().substring(0, je.getName().length() - 6);
+									className = className.replace('/', '.');
+									Class<?> c = cl.loadClass(className);
+									this.check(c);
+								}
+							}
+
+							jarFile.close();
+						}
+					}
+				} catch (IOException var13) {
+					var13.printStackTrace();
+				} catch (ClassNotFoundException var14) {
+					var14.printStackTrace();
+				} catch (IllegalAccessException var15) {
+					var15.printStackTrace();
+				}
+			}
+		}
+
+		private void check(Class<?> c) throws IllegalAccessException {
+			if (!c.isInterface()) {
+				if (!Modifier.isAbstract(c.getModifiers())) {
+					if (SearchProvider.class.isAssignableFrom(c)) {
+						this.fm.searchers.add(c);
+					}
+
+					if (ModuleProvider.class.isAssignableFrom(c)) {
+						this.fm.modules.add(c);
+					}
+
+				}
+			}
+		}
+	}
 }
