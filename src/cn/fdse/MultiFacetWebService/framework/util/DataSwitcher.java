@@ -12,7 +12,6 @@ public class DataSwitcher {
 		sb.append("[");
 		for(Classification c:cl.getClassification())
 		{
-			
 			StringBuffer subSb = new StringBuffer();
 			StringBuffer idSb = new StringBuffer();
 			for(CodeResult cr:c.getCodeSegments())
@@ -28,7 +27,6 @@ public class DataSwitcher {
 			}
 			idSb.deleteCharAt(idSb.length()-1);
 			subSb.deleteCharAt(subSb.length()-1);
-			
 			sb.append("{");
 			sb.append("text:'");
 			
@@ -48,7 +46,8 @@ public class DataSwitcher {
 		if(sb.length()!=1)
 			sb.deleteCharAt(sb.length()-1);
 		sb.append("]");
-//		System.out.println(sb.toString());
+		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@");
+		System.out.println(sb.toString());
 		return sb.toString();
 	}
 

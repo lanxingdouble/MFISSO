@@ -65,7 +65,7 @@ public class topicThread implements Runnable {
             List<Document> documentList = contentCluster.getDocuments();
             List<CodeResult> codeResultList = new ArrayList<CodeResult>();
             label = contentCluster.getLabel();
-            System.out.println("contentCluster label***:" + label);
+//            System.out.println("contentCluster label***:" + label);
             for (Document document : documentList) {
                 CodeResult post = document.getField("post");
 //				for(String title:titleList)

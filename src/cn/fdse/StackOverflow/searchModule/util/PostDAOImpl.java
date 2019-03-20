@@ -90,7 +90,6 @@ public class PostDAOImpl implements PostDAO {
             booleanQuery = new BooleanQuery();
             BooleanQuery.setMaxClauseCount(50000);
 
-
             file = new File(systemPath + "postAndFacet");
 //			 fileAnswer = new File(systemPath+"answers");
 
@@ -102,7 +101,6 @@ public class PostDAOImpl implements PostDAO {
             searcherPost = new IndexSearcher(reader);
 //			 searchAnswer = new IndexSearcher(readerAnswer);
             formatter = new SimpleHTMLFormatter("<font color='red'>", "</font>");
-
 
         } catch (IOException e2) {
             // TODO Auto-generated catch block

@@ -63,7 +63,8 @@ public class FrameManager implements Constant {
 				SearchProvider p = (SearchProvider) obj;
 				resultList.addAll(p.getResultOf(ui, this.dataMap));
 			}
-
+			System.out.println("resultlist: "+resultList);
+			System.out.println("this.dataMap: "+this.dataMap);
 			int id = 0;
 			Global.idFacetName.clear();
 			Iterator var16 = this.modules.iterator();
@@ -80,7 +81,6 @@ public class FrameManager implements Constant {
 				++id;
 				ret.add(classification);
 			}
-			System.out.println("4444444444444444");
 			System.out.println(ret);
 		} catch (InstantiationException var11) {
 			var11.printStackTrace();

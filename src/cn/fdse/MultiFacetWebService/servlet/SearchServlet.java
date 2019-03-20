@@ -58,12 +58,10 @@ public class SearchServlet extends HttpServlet {
  		}
 		
 		//get user id
-		
-		
 		String formTag = request.getParameter("formTag");
 		System.out.println("+++++++++++++++ formTag:"+formTag);
+
 		if("search".equals(formTag)){
-			
 //			OperationProcess.getInstance().outPut();
 //			OperationProcess.getInstance().initProcessData();
 			System.out.println("formtag search!!!!!!!!");

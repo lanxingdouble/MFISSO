@@ -34,18 +34,11 @@ public class Concern implements ModuleProvider {
 				{
 					System.out.println("Facet:"+post.getFocus());
 					System.out.println("Facet:"+post.getDatabase());
-
 					System.out.println("Facet:"+post.getDevelopment());
-					
-
 					System.out.println("Facet:"+post.getComponent());
-
 					System.out.println("Facet:"+post.getLanguage());
 					System.out.println("Facet:"+post.getSystem());
-
 					System.out.println("Facet:"+post.getTechnology());
-
-
 				}
 			}
 			
