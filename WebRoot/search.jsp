@@ -40,7 +40,7 @@
         var updateButton = "";
         var facetId;
         var facetItem;
-        window.onbeforeunload = function (event) {
+        window.onbeforeunload = function (event) {//提交意见
             var content = document.getElementById("idtextarea").value;
             if (content != "")
                 process("Suggestion:" + content);
@@ -48,7 +48,7 @@
             upateButton = "";
         };
 
-        $.ligerui.controls.Tree.prototype.dealSelect = function (resultSetIndex, note) {//sai xuan huo qu shu ju yuan su
+        $.ligerui.controls.Tree.prototype.dealSelect = function (resultSetIndex, note) {//刻面筛选
             $("div.hit_block").css('display', 'none');
             var data = this.getChecked();
 
@@ -73,7 +73,7 @@
             process("Facet:" + facetId + " FacetItem:" + element.substring(1, id));
         }
 
-        function showInterSection() {//chu li jiao ji
+        function showInterSection() {//处理交集
             var intersection = new Array();
             var first = true;
             var resultIndex = null;
@@ -338,46 +338,46 @@
 
 <div class="maincontent">
     <div class="maincolmask maincol">
-        <div class="col1">
-            <div id="tabTopic">
-                <%
-                    for (int i = 0; i < facetIds.size(); i++) {
-                        String title = (String) titles.get(i);
-                        String id = (String) facetIds.get(i);
-                %>
-                <div class="facetBar">
-                    <div onclick="hideOrShow('facetDiv_<%=id%>')" class="facetTitle">
-                        <%=title %>
-                    </div>
-                    <div class="facetTree">
-                        <div id="facetDiv_<%=id%>" class="facetDiv">
-                            <ul id="facetTr_<%=id%>"></ul>
-                        </div>
-                    </div>
-                </div>
-                <%} %>
-            </div>
+        <%--<div class="col1">--%>
+            <%--<div id="tabTopic">--%>
+                <%--<%--%>
+                    <%--for (int i = 0; i < facetIds.size(); i++) {--%>
+                        <%--String title = (String) titles.get(i);--%>
+                        <%--String id = (String) facetIds.get(i);--%>
+                <%--%>--%>
+                <%--<div class="facetBar">--%>
+                    <%--<div onclick="hideOrShow('facetDiv_<%=id%>')" class="facetTitle">--%>
+                        <%--<%=title %>--%>
+                    <%--</div>--%>
+                    <%--<div class="facetTree">--%>
+                        <%--<div id="facetDiv_<%=id%>" class="facetDiv">--%>
+                            <%--<ul id="facetTr_<%=id%>"></ul>--%>
+                        <%--</div>--%>
+                    <%--</div>--%>
+                <%--</div>--%>
+                <%--<%} %>--%>
+            <%--</div>--%>
 
-            <div class="con">
-                <!--
-                    <button id="showAll"
-                        onclick="showAllResult()" >show all results</button>
-                -->
-                <!-- id="btnType" -->
-                <button id="updateButton"
-                        onclick="doUpdate()">Update
-                </button>
+            <%--<div class="con">--%>
+                <%--<!----%>
+                    <%--<button id="showAll"--%>
+                        <%--onclick="showAllResult()" >show all results</button>--%>
+                <%---->--%>
+                <%--<!-- id="btnType" -->--%>
+                <%--<button id="updateButton"--%>
+                        <%--onclick="doUpdate()">Update--%>
+                <%--</button>--%>
 
-                <form id="updateForm" method="post" action="SearchServlet">
-                    <div class="functional_forms">
-                        <input name="formTag" type="hidden" value="update"></input>
-                        <input name="updateData" id="updateData" type="hidden"></input>
-                    </div>
-                </form>
+                <%--<form id="updateForm" method="post" action="SearchServlet">--%>
+                    <%--<div class="functional_forms">--%>
+                        <%--<input name="formTag" type="hidden" value="update"></input>--%>
+                        <%--<input name="updateData" id="updateData" type="hidden"></input>--%>
+                    <%--</div>--%>
+                <%--</form>--%>
 
-            </div>
+            <%--</div>--%>
 
-        </div>
+        <%--</div>--%>
 
         <div class="col2">
 
@@ -453,9 +453,6 @@
                                         </div> --%>
             <%}%>
         </div>
-        <div>
-        </div>
-
 
     </div>
     <!-- End of col2 -->
@@ -466,7 +463,7 @@
     <div class="copyright">
         Copyright © 2015 <a href="http://www.se.fudan.edu.cn">SE Lab of
         Fudan University</a>. All rights reserved.
-        <p>Last Update: Apr 20th, 2012</p>
+        <p>Last Update: Mar 20th, 2019</p>
     </div>
 </div>
 
