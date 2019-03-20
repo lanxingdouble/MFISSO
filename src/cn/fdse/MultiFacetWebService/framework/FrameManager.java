@@ -50,32 +50,24 @@ public class FrameManager implements Constant {
 	}
 
 	public FrameSession run(UserInput ui) {
-		System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 		FrameSession fi = new FrameSession();
-        System.out.println("**********************************1");
 		fi.dataMap = this.dataMap;
 		List<ClassificationList> ret = new ArrayList();
-        System.out.println("**********************************2");
 		ArrayList resultList = new ArrayList();
 
 		try {
 			Iterator var6 = this.searchers.iterator();
-            System.out.println("**********************************3");
 			while (var6.hasNext()) {
 				Class<?> c = (Class) var6.next();
-                System.out.println("**********************************4");
 				Object obj = c.newInstance();
-                System.out.println("**********************************5");
 				SearchProvider p = (SearchProvider) obj;
-                System.out.println("**********************************6");
 				resultList.addAll(p.getResultOf(ui, this.dataMap));
-                System.out.println("**********************************7");
 			}
 
 			int id = 0;
 			Global.idFacetName.clear();
 			Iterator var16 = this.modules.iterator();
-            System.out.println("**********************************8");
+			System.out.println("modules: "+modules);
 			while (var16.hasNext()) {
 				Class<?> c = (Class) var16.next();
 				Object obj = c.newInstance();
@@ -83,10 +75,13 @@ public class FrameManager implements Constant {
 				fi.addModuleProvider(p);
                 System.out.println("**********************************9");
 				ClassificationList classification = p.analysis(resultList, this.dataMap);
+				System.out.println("Facet:" + id+" "+classification.getTitle());
 				Global.idFacetName.put("Facet:" + id, classification.getTitle());
 				++id;
 				ret.add(classification);
 			}
+			System.out.println("4444444444444444");
+			System.out.println(ret);
 		} catch (InstantiationException var11) {
 			var11.printStackTrace();
 		} catch (IllegalAccessException var12) {

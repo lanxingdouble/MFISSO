@@ -131,24 +131,21 @@ public class PostDAOImpl implements PostDAO {
         for (String kw : keyword) {
             if (!kw.equalsIgnoreCase("")) {
                 kw = kw.toLowerCase().replace(":", "");
+                //未分词的查询
                 titleQuery = new TermQuery(new Term("Title", kw));
+                //设置该field查询的权重
                 titleQuery.setBoost(40f);
                 bodyQuery = new TermQuery(new Term("Body", kw));
                 bodyQuery.setBoost(1f);
                 tagQuery = new TermQuery(new Term("Tags", kw));
                 tagQuery.setBoost(1f);
+                /*booleanQueryb表示多个查询组合，SHOULD与SHOULD：表示“或”关系，最终检索结果为所有检索子句的并集。
+                 * SHOULD与MUST连用时，结果为MUST子句的检索结果,但是SHOULD可影响排序。 */
                 booleanQuery.add(titleQuery, BooleanClause.Occur.SHOULD);
                 booleanQuery.add(bodyQuery, BooleanClause.Occur.SHOULD);
                 booleanQuery.add(tagQuery, BooleanClause.Occur.SHOULD);
-//				 
             }
-
         }
-//		 
-
-//		 titleQuery = new TermQuery(new Term("Title","java"));
-//		 booleanQuery.add(titleQuery,BooleanClause.Occur.SHOULD);
-
         try {
             docsPost = searcherPost.search(booleanQuery, 200);
             System.out.println("---------booleanQuery----------");
@@ -156,7 +153,7 @@ public class PostDAOImpl implements PostDAO {
             System.out.println("---------docsPost--------------");
             System.out.println(docsPost);
             queryScorer = new QueryScorer(booleanQuery);
-
+            //高亮显示Lucene检索结果的关键词
             highlighter = new Highlighter(formatter, queryScorer);
             highlighter.setTextFragmenter(new SimpleFragmenter(200));
             int num = 0;
@@ -173,6 +170,7 @@ public class PostDAOImpl implements PostDAO {
                 postId = document.get("postId");
                 score = Integer.parseInt(document.get("Score"));
                 answerCount = document.get("AnswerCount");
+
                 if (score >= 0 && Integer.parseInt(answerCount) >= 1 && postTypeId.equals("1")) {
                     title = document.get("Title");
                     title = processJSPSpecialChar(title);
@@ -182,7 +180,9 @@ public class PostDAOImpl implements PostDAO {
 
                     count = body.length() / 100;
                     for (int i = 0; i < count; i++) {
+                        //从beginIndex开始取，到endIndex结束，从0开始数，其中不包括endIndex位置的字符
                         splitBody = body.substring(i * 100, (i + 1) * 100);
+                        //在splitBody里高亮显示匹配最好的片段，如果返回null，则显示全部
                         highterBody = highlighter.getBestFragment(analyzer.tokenStream("token", splitBody), splitBody);
 
                         if (highterBody == null)
@@ -190,10 +190,9 @@ public class PostDAOImpl implements PostDAO {
                         else
                             tempBody += highterBody;
                     }
+                    //string最后一个子串
                     splitBody = body.substring(count * 100, body.length());
-
                     highterBody = highlighter.getBestFragment(analyzer.tokenStream("token", splitBody), splitBody);
-
                     if (highterBody == null)
                         tempBody += splitBody;
                     else
@@ -203,13 +202,10 @@ public class PostDAOImpl implements PostDAO {
                     body = tempBody;
 
                     titleBody = highlighter.getBestFragment(analyzer.tokenStream("token", title), title);
-
-
                     if (titleBody != null)
                         title = titleBody;
 
                     tagBody = highlighter.getBestFragment(analyzer.tokenStream("token", tag), tag);
-
                     if (tagBody != null)
                         tag = tagBody;
 
@@ -221,6 +217,8 @@ public class PostDAOImpl implements PostDAO {
                     }
                     tempPostList.add(post);
                     num++;
+
+                    //set post answer
                     if (num == 30) {
                         sat[numIndex] = new searchAnswerThread(tempPostList, searcherPost, highlighter, analyzer);
                         t[numIndex] = new Thread(sat[numIndex]);
@@ -228,12 +226,9 @@ public class PostDAOImpl implements PostDAO {
                         num = 0;
                         numIndex++;
                         iS = false;
-
-
                     }
 //				    post.setAnaser(sortAnswer(findPostRelatedAnswers(id,searcherPost)));
 //			    	postList.add(post);
-
                 }
 //				    else if(postTypeId.equals("2")&&(score>=0))
 //			    {
@@ -292,7 +287,6 @@ public class PostDAOImpl implements PostDAO {
 //			     }		    
             }
 
-
             if (tempPostList != null && tempPostList.size() != 0) {
                 sat[numIndex] = new searchAnswerThread(tempPostList, searcherPost, highlighter, analyzer);
                 t[numIndex] = new Thread(sat[numIndex]);
@@ -306,7 +300,6 @@ public class PostDAOImpl implements PostDAO {
                 t[i].join();
                 postList.addAll(sat[i].getPost());
             }
-
 
         } catch (IOException e2) {
             // TODO Auto-generated catch block

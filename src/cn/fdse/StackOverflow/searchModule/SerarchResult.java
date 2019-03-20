@@ -62,10 +62,12 @@ public class SerarchResult implements SearchProvider{
 		//对query去除停用词
 
         InputTextRank input_text=new InputTextRank();
-		keywords = fsw.getStringWithoutStopWord(keywords);	
+		keywords = fsw.getStringWithoutStopWord(keywords);
+		System.out.println("---------start print key word without stop word---------");
+		System.out.println(keywords);
 		keywords =input_text.handleInput(keywords);
 //		keywords = rsws.removeStopWordAndStemm(keywords);
-		System.out.println("---------start print key word---------");
+		System.out.println("---------start print key word with textrank---------");
 		System.out.println(keywords);
 //		System.out.println("keword:"+keywords);
 		
