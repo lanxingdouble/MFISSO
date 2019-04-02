@@ -24,6 +24,8 @@ again
 
 against
 
+ain
+
 all
 
 almost
@@ -39,6 +41,8 @@ also
 although
 
 always
+
+am
 
 among
 
@@ -80,6 +84,10 @@ at
 
 away
 
+aren'
+
+aren't
+
 b
 
 back
@@ -111,6 +119,8 @@ behind
 being
 
 beings
+
+below
 
 best
 
@@ -152,9 +162,17 @@ come
 
 could
 
+couldn'
+
+couldn't
+
 d
 
 did
+
+didn'
+
+didn't
 
 differ
 
@@ -166,9 +184,13 @@ do
 
 does
 
+doing
+
 done
 
-down
+don'
+
+don't
 
 down
 
@@ -358,9 +380,17 @@ is
 
 it
 
+it's
+
 its
 
 itself
+
+i'd
+
+i've
+
+i'm
 
 j
 
@@ -383,6 +413,8 @@ known
 knows
 
 l
+
+ll
 
 large
 
@@ -486,6 +518,8 @@ non
 
 noone
 
+nor
+
 not
 
 nothing
@@ -530,7 +564,7 @@ opens
 
 or
 
-order
+value
 
 ordered
 
@@ -544,9 +578,15 @@ others
 
 our
 
+ours
+
+ourselves
+
 out
 
 over
+
+own
 
 p
 
@@ -644,7 +684,11 @@ shall
 
 she
 
+she's
+
 should
+
+should've
 
 show
 
@@ -700,11 +744,17 @@ than
 
 that
 
+that'll
+
 the
 
 their
 
+theirs
+
 them
+
+themselves
 
 then
 
@@ -826,6 +876,8 @@ who
 
 whole
 
+whom
+
 whose
 
 why
@@ -835,8 +887,6 @@ will
 with
 
 within
-
-without
 
 work
 
@@ -868,6 +918,18 @@ youngest
 
 your
 
+you'd
+
+you'll
+
+you're
+
 yours
+
+yourself
+
+yourselves
+
+you've
 
 z

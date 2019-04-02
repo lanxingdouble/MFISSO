@@ -63,20 +63,20 @@ public class FrameManager implements Constant {
 				SearchProvider p = (SearchProvider) obj;
 				resultList.addAll(p.getResultOf(ui, this.dataMap));
 			}
-			System.out.println("resultlist: "+resultList);
-			System.out.println("this.dataMap: "+this.dataMap);
+			//System.out.println("resultlist: "+resultList);
+			//System.out.println("this.dataMap: "+this.dataMap);
 			int id = 0;
 			Global.idFacetName.clear();
 			Iterator var16 = this.modules.iterator();
-			System.out.println("modules: "+modules);
+			//System.out.println("modules: "+modules);
 			while (var16.hasNext()) {
 				Class<?> c = (Class) var16.next();
 				Object obj = c.newInstance();
 				ModuleProvider p = (ModuleProvider) obj;
 				fi.addModuleProvider(p);
-                System.out.println("**********************************9");
+                //System.out.println("**********************************9");
 				ClassificationList classification = p.analysis(resultList, this.dataMap);
-				System.out.println("Facet:" + id+" "+classification.getTitle());
+				//System.out.println("Facet:" + id+" "+classification.getTitle());
 				Global.idFacetName.put("Facet:" + id, classification.getTitle());
 				++id;
 				ret.add(classification);

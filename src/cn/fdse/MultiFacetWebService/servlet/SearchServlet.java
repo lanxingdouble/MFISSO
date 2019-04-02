@@ -1,15 +1,5 @@
 package cn.fdse.MultiFacetWebService.servlet;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import cn.fdse.MultiFacetWebService.framework.FrameManager;
 import cn.fdse.MultiFacetWebService.framework.FrameResult;
 import cn.fdse.MultiFacetWebService.framework.FrameSession;
@@ -17,6 +7,17 @@ import cn.fdse.MultiFacetWebService.framework.util.DataSwitcher;
 import cn.fdse.StackOverflow.OperationProcess.OperationProcess;
 import cn.fdse.StackOverflow.searchModule.util.Global;
 import cn.fdse.codeSearch.openInterface.module.ClassificationList;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Servlet implementation class SearchServlet
@@ -77,8 +78,7 @@ public class SearchServlet extends HttpServlet {
 			request.getSession().setAttribute("OperationProcess", op);
 			String keywords = request.getParameter("q");
 			System.out.println("+++++++++++++++ query keywords:"+keywords);
-			FrameSession fs = fm.run(keywords);
-			System.out.println("+++++++++++++++++++++++++++");
+			FrameSession fs = fm.run(keywords);;
 			op.setProcessData("Keywords:"+keywords);
 			setPageData(fs.getFrameResult(), request);
 			request.getSession().setAttribute("FrameSession", fs);

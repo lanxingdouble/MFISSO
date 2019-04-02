@@ -46,8 +46,8 @@ public class DataSwitcher {
 		if(sb.length()!=1)
 			sb.deleteCharAt(sb.length()-1);
 		sb.append("]");
-		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@");
-		System.out.println(sb.toString());
+		//System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@");
+		//System.out.println(sb.toString());
 		return sb.toString();
 	}
 

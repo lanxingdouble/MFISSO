@@ -1,11 +1,6 @@
 package cn.fdse.StackOverflow.searchModule;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import cn.fdse.NewInputHandle.InputTextRank;
+import cn.fdse.NewInputHandle.InputIDF;
 import cn.fdse.StackOverflow.searchModule.util.Global;
 import cn.fdse.StackOverflow.searchModule.util.PostDAOImpl;
 import cn.fdse.StackOverflow.translation.BaiDuTranslator;
@@ -13,26 +8,29 @@ import cn.fdse.codeSearch.openInterface.searchInput.UserInput;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
 import cn.fdse.codeSearch.openInterface.searchResult.SearchProvider;
 import cn.fdse.filter.FilterStopWord;
-import cn.fdse.filter.RemoveStopWordAndStemming;
 
-public class SerarchResult implements SearchProvider{
-	private static Map<String, Object> configMap = null;
-	protected String keywords = null;
-	protected List<CodeResult> codeResultList = null;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
-	PostDAOImpl pdi = new PostDAOImpl("E:\\MFISSO\\StackOverflow Search Tool code\\");
+public class SerarchResult implements SearchProvider {
+    private static Map<String, Object> configMap = null;
+    protected String keywords = null;
+    protected List<CodeResult> codeResultList = null;
+
+    PostDAOImpl pdi = new PostDAOImpl("E:\\MFISSO\\StackOverflow Search Tool code\\");
 //	PostDAOImpl pdi = new PostDAOImpl("H:\\");
 
 //	PostDAOImpl pdi = new PostDAOImpl(Global.syspath);
-	
-	FilterStopWord fsw = new FilterStopWord(Global.syspath);
-	
-//	RemoveStopWordAndStemming rsws = new RemoveStopWordAndStemming(Global.syspath);
-	BaiDuTranslator trans = new BaiDuTranslator();
 
-	@Override
-	public  List<CodeResult> getResultOf(UserInput ui, Map<String, Object> dataMap){
-		
+    FilterStopWord fsw = new FilterStopWord(Global.root_path);
+
+    //	RemoveStopWordAndStemming rsws = new RemoveStopWordAndStemming(Global.syspath);
+    BaiDuTranslator trans = new BaiDuTranslator();
+
+    @Override
+    public List<CodeResult> getResultOf(UserInput ui, Map<String, Object> dataMap) {
+
 //		Global.titleL.add("Indexing and Searching Lucene Index");
 //		Global.titleL.add("Merge index in Lucene");
 //		Global.titleL.add("Indexing and Searching Lucene Index");//
@@ -45,36 +43,42 @@ public class SerarchResult implements SearchProvider{
 //		Global.titleL.add("Lucene QueryParser ");
 //		Global.titleL.add("Combine queries in Lucene with BooleanQuery");
 //		Global.titleL.add("Lucene Index - single term and phrase querying");
-		configMap = dataMap; 
-		String path = configMap.get("frame.workDir").toString();
+        configMap = dataMap;
+        String path = configMap.get("frame.workDir").toString();
 //		pdi.setPath(path);
-		//在部署的时候将postAndFacet放到
-		//WEB-INF下因为path是WEB-INF
-		
-	
-		keywords = ui.getKeyWords();
- 		System.out.println("ww:"+keywords);
-		
-		keywords = keywords.replace("O(", "").replace(".", " ").replace("(", "").replace(")", "");
+        //在部署的时候将postAndFacet放到
+        //WEB-INF下因为path是WEB-INF
+
+
+        keywords = ui.getKeyWords();
+        System.out.println("ww:" + keywords);
+
+        keywords = keywords.replace("O(", "").replace(".", " ").replace("(", "").replace(")", "");
 //		System.out.println("jqt:"+keywords);
 //		keywords = trans.getResult(keywords);
 //		System.out.println(keywords);
-		//对query去除停用词
+        //对query去除停用词
 
-        InputTextRank input_text=new InputTextRank();
-		keywords = fsw.getStringWithoutStopWord(keywords);
-		System.out.println("---------start print key word without stop word---------");
-		System.out.println(keywords);
-		keywords =input_text.handleInput(keywords);
-//		keywords = rsws.removeStopWordAndStemm(keywords);
-		System.out.println("---------start print key word with textrank---------");
-		System.out.println(keywords);
-//		System.out.println("keword:"+keywords);
-		
- 		List<CodeResult> postList = pdi.findPostFromLuceneAndDatabase(keywords);
+        keywords = fsw.getStringWithoutStopWord(keywords);
+        System.out.println("---------start print key word without stop word---------");
+        System.out.println(keywords);
+//		InputTextRank input_text=new InputTextRank();
+//		keywords =input_text.handleInput(keywords);
+////		keywords = rsws.removeStopWordAndStemm(keywords);
+//		System.out.println("---------start print key word with textrank---------");
+//		System.out.println(keywords);
+        InputIDF input_idf = new InputIDF();
+        try {
+            keywords = input_idf.handleInput(keywords, 20);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("---------start print key word with tf-idf---------");
+        System.out.println(keywords);
+        List<CodeResult> postList = pdi.findPostFromLuceneAndDatabase(keywords);
 //		 List<CodeResult> postList = new ArrayList<CodeResult>();
 
-		return postList;
-	}
+        return postList;
+    }
 
 }

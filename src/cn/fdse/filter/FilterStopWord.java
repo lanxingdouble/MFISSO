@@ -1,5 +1,7 @@
 package cn.fdse.filter;
 
+import cn.fdse.StackOverflow.searchModule.util.Global;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,10 +45,13 @@ public class FilterStopWord
 		String[] resultArray = s.split(" ");
 		for(String ra:resultArray)
 		{
+			ra= ra.replace("[","").replace("]","").replace("?","").replace("(","").replace(")","").replace("{","").replace("}","");
+			System.out.println("ra: "+ra);
 			if(!stopWordSet.contains(ra.toLowerCase()))
+				System.out.println("raaa: "+ra);
 				result += ra + ",";
 		}
-			
+		System.out.println(result);
 		return result;
 	
 	}
@@ -63,11 +68,10 @@ public class FilterStopWord
 		   return "";
 
 	}
-	
-	
+
 	public static void main(String args[])
 	{
-//		FilterStopWord fsw = new FilterStopWord();
-//		System.out.println(fsw.getStringWithoutStopWord("I like to eat apple"));
+		FilterStopWord fsw = new FilterStopWord(Global.root_path);
+		System.out.println(fsw.getStringWithoutStopWord("I like to eat apple Can"));
 	}
 }

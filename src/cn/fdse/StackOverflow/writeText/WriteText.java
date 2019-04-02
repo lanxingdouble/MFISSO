@@ -1,15 +1,8 @@
 package cn.fdse.StackOverflow.writeText;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-
 import cn.fdse.StackOverflow.searchModule.util.Global;
+
+import java.io.*;
 
 public class WriteText {
 	

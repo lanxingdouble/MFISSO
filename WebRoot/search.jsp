@@ -36,11 +36,12 @@
     <script src="LigerUiLib/ligerUI/js/plugins/ligerTree.js" type="text/javascript"></script>
     <script type="text/javascript">
         javascript:window.history.forward(1);
-
+        var checknum=0;
         var updateButton = "";
         var facetId;
         var facetItem;
-        window.onbeforeunload = function (event) {//提交意见
+        var selectedCheckBox=new Array();
+        window.onbeforeunload = function (event) {
             var content = document.getElementById("idtextarea").value;
             if (content != "")
                 process("Suggestion:" + content);
@@ -48,7 +49,7 @@
             upateButton = "";
         };
 
-        $.ligerui.controls.Tree.prototype.dealSelect = function (resultSetIndex, note) {//刻面筛选
+        $.ligerui.controls.Tree.prototype.dealSelect = function (resultSetIndex, note) {//sai xuan huo qu shu ju yuan su
             $("div.hit_block").css('display', 'none');
             var data = this.getChecked();
 
@@ -73,7 +74,7 @@
             process("Facet:" + facetId + " FacetItem:" + element.substring(1, id));
         }
 
-        function showInterSection() {//处理交集
+        function showInterSection() {//chu li jiao ji
             var intersection = new Array();
             var first = true;
             var resultIndex = null;
@@ -295,6 +296,27 @@
             )
         }
 
+        function selectApplyUserType(obj){
+            if( obj.checked==true){
+                checknum = checknum + 1;
+                $("#selecteNum").html(checknum);
+                selectedCheckBox.push(obj.id);
+                selectedCheckBox.sort();
+            }else{
+                checknum=checknum-1;
+                $("#selecteNum").html(checknum);
+                var index = selectedCheckBox.indexOf(obj.id);
+                if (index > -1) {
+                    selectedCheckBox.splice(index, 1);
+                }
+            }
+            console.log(selectedCheckBox);
+            showSelectedCheck();
+        }
+
+        function showSelectedCheck(){
+            $("#showAllSelectedAnswer").html(selectedCheckBox.toString());
+        }
     </script>
 
 </head>
@@ -384,6 +406,8 @@
             <div onclick="showAllSearchedResult()" id="resultCount"><span id="selecteNum">0</span> results selected
                 of <%=results.size() %> results
             </div>
+            <div id="showAllSelectedAnswer">
+            </div>
 
             <div id="result" style="height: 1800px;  overflow-y:auto;">
                 <%
@@ -396,12 +420,14 @@
 
                     <div class="content">
                         <h3 class="r">
-                            <input type="checkbox"/> <a href="javascript:void(0)"
-                                                        class="name"
-                                                        onclick="showStackoverflowPage('<%=cr.getId()%>','<%=cr.getTitle().replace("<font color='red'>","").replace("</font>","").replace("'","")%>');"><%=cr.getTitle()%>
+                            <input type="checkbox"  id="<%=i%>" onclick="selectApplyUserType(this)"/><%=i%>:
+                            <a href="javascript:void(0)"
+                               class="name"
+                               onclick="showStackoverflowPage('<%=cr.getId()%>','<%=cr.getTitle().replace("<font color='red'>","").replace("</font>","").replace("'","")%>');"><%=cr.getTitle()%>
                         </a>
                         </h3>
-                        <div class="post-text itemprop=" text">
+                        <div class="post-text itemprop=" text
+                        ">
                         <%=cr.getBody() %>
                     </div>
                     <div class="s">
@@ -453,6 +479,9 @@
                                         </div> --%>
             <%}%>
         </div>
+        <div>
+        </div>
+
 
     </div>
     <!-- End of col2 -->
@@ -463,7 +492,7 @@
     <div class="copyright">
         Copyright © 2015 <a href="http://www.se.fudan.edu.cn">SE Lab of
         Fudan University</a>. All rights reserved.
-        <p>Last Update: Mar 20th, 2019</p>
+        <p>Last Update: Apr 20th, 2012</p>
     </div>
 </div>
 

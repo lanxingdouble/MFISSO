@@ -1,11 +1,10 @@
 package cn.fdse.StackOverflow.OperationProcess;
 
+import cn.fdse.StackOverflow.searchModule.util.Global;
+import cn.fdse.StackOverflow.writeText.WriteText;
+
 import java.util.HashMap;
 import java.util.List;
-
-import cn.fdse.StackOverflow.searchModule.util.Global;
-import cn.fdse.StackOverflow.sqlite.SYDatabase;
-import cn.fdse.StackOverflow.writeText.WriteText;
 
 public class OperationProcess {
 	private String processData = ""; 
@@ -83,7 +82,6 @@ public class OperationProcess {
 		System.out.println("---------suggestion:"+suggestion);
 		WriteText wt = new WriteText();
 		String s = "UserId:"+Global.userId + " " + processData +"\r\n";
-		System.out.println("$$$$$$$$$$$$$$$$$$");
 		System.out.println(s);
 //		String s  = keyword+" & "+ processData +" & "+title +" & "+suggestion +" & " +"\r\n";
 		wt.writeText(s);

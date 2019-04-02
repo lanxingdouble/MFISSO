@@ -1,46 +1,33 @@
 package cn.fdse.StackOverflow.searchModule.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-
+import cn.fdse.StackOverflow.searchModule.Answer;
+import cn.fdse.StackOverflow.searchModule.Post;
+import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.NumericRangeFilter;
-import org.apache.lucene.search.NumericRangeQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Formatter;
-import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
-import org.apache.lucene.search.highlight.QueryScorer;
-import org.apache.lucene.search.highlight.SimpleFragmenter;
-import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.search.*;
+import org.apache.lucene.search.highlight.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
-//import com.sun.org.apache.xalan.internal.xsltc.runtime.Hashtable;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import cn.fdse.StackOverflow.searchModule.Answer;
-import cn.fdse.StackOverflow.searchModule.Post;
-import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
+//import com.sun.org.apache.xalan.internal.xsltc.runtime.Hashtable;
 
 public class PostDAOImpl implements PostDAO {
     String answerCount;
@@ -54,7 +41,7 @@ public class PostDAOImpl implements PostDAO {
     File file = null, fileAnswer = null;
     String parentId, postTypeId, postId;
     Directory dirPost, dirAnswer;
-    TermQuery titleQuery = null, bodyQuery = null, tagQuery = null;
+    TermQuery titleQuery = null, bodyQuery = null, tagQuery = null,synonymsQuery=null;
     Query numberRange = null, postType = null;
     int id = 0;
     String title, body, tag;
@@ -95,7 +82,6 @@ public class PostDAOImpl implements PostDAO {
 
             dirPost = FSDirectory.open(file);
 //			 dirAnswer = FSDirectory.open(fileAnswer);
-            System.out.println("---------------------data dir:" + dirPost);
             reader = DirectoryReader.open(dirPost);// 读取目录
 //             readerAnswer = DirectoryReader.open(dirAnswer);
             searcherPost = new IndexSearcher(reader);
@@ -113,6 +99,23 @@ public class PostDAOImpl implements PostDAO {
 
     }
 
+    public static JsonObject readJson(String path) {
+        File file = new File(path + "synonyms.json");
+        String cont = null;
+        JsonParser jsonParser = new JsonParser();
+        try {
+            if (file.exists()) {
+                cont = new BufferedReader(new FileReader(file)).lines().collect(Collectors.joining("\n"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (cont == null || cont.equals("")) {
+            cont = "{}";
+        }
+        return jsonParser.parse(cont).getAsJsonObject();
+    }
+
     public void setPath(String systemPath) {
 
         file = new File(systemPath + "postAndFacet");
@@ -120,10 +123,9 @@ public class PostDAOImpl implements PostDAO {
 
 
     public List<CodeResult> findPostFromLuceneAndDatabase(String keywords) {
+        JsonObject synonyms = readJson("E:\\MFISSO\\StackOverflow Search Tool code\\MFISSO WEB\\");
         postList.clear();
-
         String[] keyword = keywords.split(",");
-        int num1 = 0, num2 = 0;
         boolean iS = false;
 
         for (String kw : keyword) {
@@ -132,9 +134,10 @@ public class PostDAOImpl implements PostDAO {
                 //未分词的查询
                 titleQuery = new TermQuery(new Term("Title", kw));
                 //设置该field查询的权重
+                //boost：激励因子，可以通过setBoost方法设置，需要说明的通过field和doc都可以设置，所设置的值会同时起作用
                 titleQuery.setBoost(40f);
                 bodyQuery = new TermQuery(new Term("Body", kw));
-                bodyQuery.setBoost(1f);
+                bodyQuery.setBoost(10f);
                 tagQuery = new TermQuery(new Term("Tags", kw));
                 tagQuery.setBoost(1f);
                 /*booleanQueryb表示多个查询组合，SHOULD与SHOULD：表示“或”关系，最终检索结果为所有检索子句的并集。
@@ -143,19 +146,33 @@ public class PostDAOImpl implements PostDAO {
                 booleanQuery.add(bodyQuery, BooleanClause.Occur.SHOULD);
                 booleanQuery.add(tagQuery, BooleanClause.Occur.SHOULD);
             }
+            if (synonyms.has(kw)) {
+                //System.out.println(synonyms.get(kw).toString());
+                String synonymstag_str = synonyms.get(kw).toString();
+                synonymstag_str = synonymstag_str.replace("[", "").replace("]", "").replace("\"", "")+",";
+                String[] synonyms_tag = synonymstag_str.split(",");
+                float boost= (float) (1.0/(synonyms_tag.length*1.0));
+                System.out.println("boost: "+boost);
+                for (String tag:synonyms_tag) {
+                    synonymsQuery = new TermQuery(new Term("Tags", tag));
+                    synonymsQuery.setBoost(boost);
+                    booleanQuery.add(synonymsQuery, BooleanClause.Occur.SHOULD);
+                }
+            }
         }
         try {
             docsPost = searcherPost.search(booleanQuery, 200);
             System.out.println("---------booleanQuery----------");
             System.out.println(booleanQuery);
-            System.out.println("---------docsPost--------------");
-            System.out.println(docsPost);
+//            System.out.println("---------docsPost--------------");
+//            System.out.println(docsPost);
             queryScorer = new QueryScorer(booleanQuery);
             //高亮显示Lucene检索结果的关键词
             highlighter = new Highlighter(formatter, queryScorer);
             highlighter.setTextFragmenter(new SimpleFragmenter(200));
             int num = 0;
             int numIndex = 0;
+            //在Lucene中score简单说是由 tf * idf * boost * lengthNorm计算得出的
             for (ScoreDoc doc : docsPost.scoreDocs) {
                 tempBody = "";
                 splitBody = "";
