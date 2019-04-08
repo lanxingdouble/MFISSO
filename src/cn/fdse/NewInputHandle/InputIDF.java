@@ -1,6 +1,8 @@
 package cn.fdse.NewInputHandle;
 
+import cn.fdse.StackOverflow.jsonOperation.jsonOperation;
 import cn.fdse.StackOverflow.searchModule.util.Global;
+import com.google.gson.JsonObject;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -41,17 +43,18 @@ public class InputIDF {
                 docfre=indexreader.docFreq(new Term("Body", keyword));
             }
             if (docfre==0){
-                return 5.0;
+                return 0.0;
             }
             return Math.log10(maxDoc * 1.0 / docfre);
         } catch (IOException e) {
             e.printStackTrace();
-            return 5.0;
+            return 0.0;
         }
     }
 
     //在所有title中没有出现过的词，其IDF=5,
     public String handleInput(String s, Integer limit) throws IOException {
+        JsonObject synonyms = jsonOperation.readJson("E:\\MFISSO\\StackOverflow Search Tool code\\MFISSO WEB\\synonyms.json");
         Directory directroy = null;
         directroy = FSDirectory.open(new File(Global.facet_index_path));
         indexreader = DirectoryReader.open(directroy);
@@ -88,6 +91,17 @@ public class InputIDF {
         //计算每个词的tf-idf
         for (String keyword : keywords_unique) {
             idf = getIDF(keyword);
+            if (idf==0.0){
+                if (synonyms.has(keyword)) {
+                    String synonymstag_str = synonyms.get(keyword).toString();
+                    synonymstag_str = synonymstag_str.replace("[", "").replace("]", "").replace("\"", "")+",";
+                    String[] synonyms_tag = synonymstag_str.split(",");
+                    for(String tag: synonyms_tag){
+                        idf = getIDF(keyword);
+                        if(idf>0) break;
+                    }
+                }
+            }
             listA.add(new KeyWords(keyword, idf * tfmap.get(keyword)));
         }
 

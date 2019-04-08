@@ -46,10 +46,9 @@ public class FilterStopWord
 		for(String ra:resultArray)
 		{
 			ra= ra.replace("[","").replace("]","").replace("?","").replace("(","").replace(")","").replace("{","").replace("}","");
-			System.out.println("ra: "+ra);
-			if(!stopWordSet.contains(ra.toLowerCase()))
-				System.out.println("raaa: "+ra);
+			if(!stopWordSet.contains(ra.toLowerCase())) {
 				result += ra + ",";
+			}
 		}
 		System.out.println(result);
 		return result;

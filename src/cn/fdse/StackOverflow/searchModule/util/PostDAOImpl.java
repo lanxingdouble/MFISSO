@@ -1,10 +1,11 @@
 package cn.fdse.StackOverflow.searchModule.util;
 
+import cn.fdse.StackOverflow.jsonOperation.jsonOperation;
 import cn.fdse.StackOverflow.searchModule.Answer;
 import cn.fdse.StackOverflow.searchModule.Post;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
+import cn.fdse.se.facet.PostFacetType;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
@@ -17,15 +18,12 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 //import com.sun.org.apache.xalan.internal.xsltc.runtime.Hashtable;
 
@@ -99,31 +97,14 @@ public class PostDAOImpl implements PostDAO {
 
     }
 
-    public static JsonObject readJson(String path) {
-        File file = new File(path + "synonyms.json");
-        String cont = null;
-        JsonParser jsonParser = new JsonParser();
-        try {
-            if (file.exists()) {
-                cont = new BufferedReader(new FileReader(file)).lines().collect(Collectors.joining("\n"));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (cont == null || cont.equals("")) {
-            cont = "{}";
-        }
-        return jsonParser.parse(cont).getAsJsonObject();
-    }
-
     public void setPath(String systemPath) {
 
         file = new File(systemPath + "postAndFacet");
     }
 
 
-    public List<CodeResult> findPostFromLuceneAndDatabase(String keywords) {
-        JsonObject synonyms = readJson("E:\\MFISSO\\StackOverflow Search Tool code\\MFISSO WEB\\");
+    public List<CodeResult> findPostFromLuceneAndDatabase(String keywords, PostFacetType postfacettype) {
+        JsonObject synonyms = jsonOperation.readJson("E:\\MFISSO\\StackOverflow Search Tool code\\MFISSO WEB\\synonyms.json");
         postList.clear();
         String[] keyword = keywords.split(",");
         boolean iS = false;
@@ -152,7 +133,6 @@ public class PostDAOImpl implements PostDAO {
                 synonymstag_str = synonymstag_str.replace("[", "").replace("]", "").replace("\"", "")+",";
                 String[] synonyms_tag = synonymstag_str.split(",");
                 float boost= (float) (1.0/(synonyms_tag.length*1.0));
-                System.out.println("boost: "+boost);
                 for (String tag:synonyms_tag) {
                     synonymsQuery = new TermQuery(new Term("Tags", tag));
                     synonymsQuery.setBoost(boost);
@@ -164,8 +144,6 @@ public class PostDAOImpl implements PostDAO {
             docsPost = searcherPost.search(booleanQuery, 200);
             System.out.println("---------booleanQuery----------");
             System.out.println(booleanQuery);
-//            System.out.println("---------docsPost--------------");
-//            System.out.println(docsPost);
             queryScorer = new QueryScorer(booleanQuery);
             //高亮显示Lucene检索结果的关键词
             highlighter = new Highlighter(formatter, queryScorer);
@@ -225,6 +203,7 @@ public class PostDAOImpl implements PostDAO {
                         tag = tagBody;
 
                     post = new Post(id, title, body, tag);
+                    System.out.println("document.get(\"Language\")"+document.get("Language"));
                     post.setFacetName(document.get("Concern"), document.get("System"), document.get("Language"), document.get("Development"),
                             document.get("Framework"), document.get("Database"), document.get("Technology"));
                     if (num == 0) {
@@ -309,8 +288,6 @@ public class PostDAOImpl implements PostDAO {
                 num = 0;
                 numIndex++;
             }
-//			readerAnswer.close();
-//			dirAnswer.close();
             for (int i = 0; i < numIndex; i++) {
                 t[i].join();
                 postList.addAll(sat[i].getPost());

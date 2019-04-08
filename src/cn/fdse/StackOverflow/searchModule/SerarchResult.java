@@ -1,5 +1,6 @@
 package cn.fdse.StackOverflow.searchModule;
 
+import cn.fdse.NewInputHandle.InputFacet;
 import cn.fdse.NewInputHandle.InputIDF;
 import cn.fdse.StackOverflow.searchModule.util.Global;
 import cn.fdse.StackOverflow.searchModule.util.PostDAOImpl;
@@ -8,6 +9,7 @@ import cn.fdse.codeSearch.openInterface.searchInput.UserInput;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
 import cn.fdse.codeSearch.openInterface.searchResult.SearchProvider;
 import cn.fdse.filter.FilterStopWord;
+import cn.fdse.se.facet.PostFacetType;
 
 import java.io.IOException;
 import java.util.List;
@@ -59,6 +61,9 @@ public class SerarchResult implements SearchProvider {
 //		System.out.println(keywords);
         //对query去除停用词
 
+        InputFacet input_facet = new InputFacet();
+        PostFacetType pt = input_facet.handleinput(keywords);
+
         keywords = fsw.getStringWithoutStopWord(keywords);
         System.out.println("---------start print key word without stop word---------");
         System.out.println(keywords);
@@ -75,7 +80,7 @@ public class SerarchResult implements SearchProvider {
         }
         System.out.println("---------start print key word with tf-idf---------");
         System.out.println(keywords);
-        List<CodeResult> postList = pdi.findPostFromLuceneAndDatabase(keywords);
+        List<CodeResult> postList = pdi.findPostFromLuceneAndDatabase(keywords, pt);
 //		 List<CodeResult> postList = new ArrayList<CodeResult>();
 
         return postList;
