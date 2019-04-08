@@ -48,24 +48,22 @@ public class SearchServlet extends HttpServlet {
 		FrameManager fm = null;
 		if((fm = FrameManager.getSingleton())==null){
 			String sysPath = this.getServletConfig().getServletContext().getRealPath("WEB-INF")+File.separator;
-			System.out.println("+++++++++++++++:"+sysPath);
 	        String initFile = "config.ini";
 	        fm = FrameManager.getSingleton(sysPath, initFile);
 	        Global.syspath = sysPath;
 	        String userId = request.getParameter("userid");
-			System.out.println("+++++++++++++++ userid:"+userId);
+			//System.out.println("+++++++++++++++ userid:"+userId);
 			Global.userId = userId;
 	        
  		}
 		
 		//get user id
 		String formTag = request.getParameter("formTag");
-		System.out.println("+++++++++++++++ formTag:"+formTag);
+		//System.out.println("+++++++++++++++ formTag:"+formTag);
 
 		if("search".equals(formTag)){
 //			OperationProcess.getInstance().outPut();
 //			OperationProcess.getInstance().initProcessData();
-			System.out.println("formtag search!!!!!!!!");
 			OperationProcess op;
 			List<String> facetList = new ArrayList<String>();
 			op = (OperationProcess)request.getSession().getAttribute("OperationProcess");
@@ -77,7 +75,7 @@ public class SearchServlet extends HttpServlet {
 			op = new OperationProcess(facetList);
 			request.getSession().setAttribute("OperationProcess", op);
 			String keywords = request.getParameter("q");
-			System.out.println("+++++++++++++++ query keywords:"+keywords);
+//			System.out.println("+++++++++++++++ query keywords:"+keywords);
 			FrameSession fs = fm.run(keywords);;
 			op.setProcessData("Keywords:"+keywords);
 			setPageData(fs.getFrameResult(), request);

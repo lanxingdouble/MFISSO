@@ -62,11 +62,6 @@ public class InputFacet {
 //	        System.out.println("time:"+new Date(System.currentTimeMillis()));
             sentenceList = tcNLP.getSentence();
             for (Facet item : itemList) {
-//			   if(item.getEnvir().contains("Explain"))
-//			   {
-//				   System.out.println("ok");
-//				   item.init(sentenceList, post, queryClause);
-//			   }
                 if (item.isMatch())
                     continue;
                 item.init(sentenceList, post, null);
@@ -253,7 +248,8 @@ public class InputFacet {
 
     public static void main(String args[]) {
         InputFacet main = new InputFacet();
-        String text="How to show a modal dialog in CSS JavaScript using bootstrap? Im using react-16 in a project created using create-react-app and the vanilla bootstrap 4 library that provides styling (no components). Can someone point me towards a working example where pressing a button I can open a modal dialog styled with bootstrap?";
+        //刻面分析对短文本的效果不好
+        String text="How to use it in Python";
         main.handleinput(text);
     }
 }

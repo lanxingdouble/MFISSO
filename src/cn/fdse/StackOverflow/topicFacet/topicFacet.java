@@ -1,34 +1,19 @@
 
 package cn.fdse.StackOverflow.topicFacet;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.carrot2.clustering.lingo.LingoClusteringAlgorithm;
-import org.carrot2.clustering.stc.STCClusteringAlgorithm;
-import org.carrot2.clustering.stc.STCClusteringAlgorithmDescriptor;
-import org.carrot2.core.Cluster;
-import org.carrot2.core.Controller;
-import org.carrot2.core.ControllerFactory;
-import org.carrot2.core.Document;
-import org.carrot2.core.ProcessingResult;
-import org.carrot2.core.attribute.AttributeNames;
-import org.carrot2.text.linguistic.LanguageModel;
-import org.carrot2.text.preprocessing.CaseNormalizer;
-import org.carrot2.text.preprocessing.PreprocessingContext;
-import org.carrot2.text.preprocessing.filter.StopWordLabelFilter;
-import org.carrot2.util.attribute.AttributeUtils;
-
-import cn.fdse.StackOverflow.searchModule.Post;
-import cn.fdse.StackOverflow.searchModule.util.PostDAOImpl;
+import cn.fdse.StackOverflow.searchModule.util.Global;
 import cn.fdse.codeSearch.openInterface.module.Classification;
 import cn.fdse.codeSearch.openInterface.module.ClassificationList;
 import cn.fdse.codeSearch.openInterface.module.ModuleProvider;
 import cn.fdse.codeSearch.openInterface.searchResult.CodeResult;
 import cn.fdse.filter.RemoveStopWordAndStemming;
 import cn.fdse.filter.StopWordAndStemm;
+import org.carrot2.core.Cluster;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class topicFacet implements ModuleProvider {
     Map<String, Object> processingAttributes = new HashMap<String, Object>();
@@ -61,7 +46,7 @@ public class topicFacet implements ModuleProvider {
         CONTENT = new focusFacet("Topic");
         path = dataMap.get("frame.workDir").toString();
         focusFacet CONTENT = new focusFacet("Topic");
-        wns = new StopWordAndStemm(path);
+        wns = new StopWordAndStemm(Global.root_path);
 //		rsws = new RemoveStopWordAndStemming(path);
 
         // TODO Auto-generated method stub

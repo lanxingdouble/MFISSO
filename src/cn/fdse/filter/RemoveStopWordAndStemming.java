@@ -1,17 +1,17 @@
 package cn.fdse.filter;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import cn.fdse.StackOverflow.searchModule.util.Global;
 import edu.mit.jwi.Dictionary;
 import edu.mit.jwi.IDictionary;
-import edu.mit.jwi.item.IIndexWord;
 import edu.mit.jwi.item.POS;
 import edu.mit.jwi.morph.IStemmer;
 import edu.mit.jwi.morph.WordnetStemmer;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
 
 public class RemoveStopWordAndStemming {
 	
@@ -23,7 +23,6 @@ public class RemoveStopWordAndStemming {
 	public RemoveStopWordAndStemming(String systemPath)
 	{
 		String wnhome = systemPath+ "WordNet/2.1/";
-//		String wnhome = "H:\\WordNet\\2.1\\";
 		String path = wnhome + File.separator + "dict";
 		URL url = null;
 		try {
@@ -38,7 +37,7 @@ public class RemoveStopWordAndStemming {
 		dict.open(); // �򿪴ʵ�	
 		stem =  new WordnetStemmer( dict );
 		wordStemmMap = new HashMap<String,String>();
-		fsw = new FilterStopWord(systemPath);
+		fsw = new FilterStopWord(Global.root_path);
 
 	}
 	

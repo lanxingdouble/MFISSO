@@ -1,16 +1,6 @@
 package cn.fdse.filter;
 
-import java.util.List;
-import java.util.Properties;
-
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.CoreAnnotations.LemmaAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.util.CoreMap;
+import cn.fdse.StackOverflow.searchModule.util.Global;
 
 public class StopWordAndStemm {
 
@@ -39,7 +29,7 @@ public class StopWordAndStemm {
   {
 	  String text = "mainly finding good documentation ";
 	 
-	  StopWordAndStemm stm = new StopWordAndStemm("E:\\MFISSO\\StackOverflow Search Tool code\\MFISSO WEB\\WebRoot\\");
+	  StopWordAndStemm stm = new StopWordAndStemm(Global.root_path);
 	  System.out.println(stm.getClearSentence(text));
   }
 }

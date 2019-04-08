@@ -20,9 +20,7 @@ public class SerarchResult implements SearchProvider {
     protected String keywords = null;
     protected List<CodeResult> codeResultList = null;
 
-    PostDAOImpl pdi = new PostDAOImpl("E:\\MFISSO\\StackOverflow Search Tool code\\");
-//	PostDAOImpl pdi = new PostDAOImpl("H:\\");
-
+    PostDAOImpl pdi = new PostDAOImpl(Global.facet_index_path);
 //	PostDAOImpl pdi = new PostDAOImpl(Global.syspath);
 
     FilterStopWord fsw = new FilterStopWord(Global.root_path);
@@ -51,9 +49,9 @@ public class SerarchResult implements SearchProvider {
         //在部署的时候将postAndFacet放到
         //WEB-INF下因为path是WEB-INF
 
-
+        System.out.println("path: " + path);
         keywords = ui.getKeyWords();
-        System.out.println("ww:" + keywords);
+        System.out.println("input query: " + keywords);
 
         keywords = keywords.replace("O(", "").replace(".", " ").replace("(", "").replace(")", "");
 //		System.out.println("jqt:"+keywords);

@@ -54,7 +54,7 @@ public class InputIDF {
 
     //若是在title中idf为0，则用该词的同义标签去寻找
     public String handleInput(String s, Integer limit) throws IOException {
-        JsonObject synonyms = jsonOperation.readJson("E:\\MFISSO\\StackOverflow Search Tool code\\MFISSO WEB\\synonyms.json");
+        JsonObject synonyms = jsonOperation.readJson(Global.root_path+"synonyms.json");
         Directory directroy = null;
         directroy = FSDirectory.open(new File(Global.facet_index_path));
         indexreader = DirectoryReader.open(directroy);

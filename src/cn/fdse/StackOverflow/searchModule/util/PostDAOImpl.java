@@ -75,7 +75,7 @@ public class PostDAOImpl implements PostDAO {
             booleanQuery = new BooleanQuery();
             BooleanQuery.setMaxClauseCount(50000);
 
-            file = new File(systemPath + "postAndFacet");
+            file = new File(systemPath);
 //			 fileAnswer = new File(systemPath+"answers");
 
             dirPost = FSDirectory.open(file);
@@ -104,7 +104,7 @@ public class PostDAOImpl implements PostDAO {
 
 
     public List<CodeResult> findPostFromLuceneAndDatabase(String keywords, PostFacetType postfacettype) {
-        JsonObject synonyms = jsonOperation.readJson("E:\\MFISSO\\StackOverflow Search Tool code\\MFISSO WEB\\synonyms.json");
+        JsonObject synonyms = jsonOperation.readJson(Global.root_path+"synonyms.json");
         postList.clear();
         String[] keyword = keywords.split(",");
         boolean iS = false;
