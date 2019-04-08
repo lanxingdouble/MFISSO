@@ -48,8 +48,6 @@ public class SerarchResult implements SearchProvider {
 //		pdi.setPath(path);
         //在部署的时候将postAndFacet放到
         //WEB-INF下因为path是WEB-INF
-
-        System.out.println("path: " + path);
         keywords = ui.getKeyWords();
         System.out.println("input query: " + keywords);
 

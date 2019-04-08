@@ -48,9 +48,14 @@ public class SearchServlet extends HttpServlet {
 		FrameManager fm = null;
 		if((fm = FrameManager.getSingleton())==null){
 			String sysPath = this.getServletConfig().getServletContext().getRealPath("WEB-INF")+File.separator;
+			String sysPath2 = this.getServletConfig().getServletContext().getRealPath("/")+File.separator;
+			sysPath2=sysPath2.replace("WebRoot\\","");
+			String sysPath3=sysPath2.replace("MFISSO WEB\\","");
 	        String initFile = "config.ini";
 	        fm = FrameManager.getSingleton(sysPath, initFile);
 	        Global.syspath = sysPath;
+			Global.root_path = sysPath2;
+			Global.facet_index_path=sysPath3+"postAndFacet";
 	        String userId = request.getParameter("userid");
 			//System.out.println("+++++++++++++++ userid:"+userId);
 			Global.userId = userId;
