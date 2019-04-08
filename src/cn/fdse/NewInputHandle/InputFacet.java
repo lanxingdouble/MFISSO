@@ -253,9 +253,7 @@ public class InputFacet {
 
     public static void main(String args[]) {
         InputFacet main = new InputFacet();
-        String text="Get the source directory of a Bash script from within the script itself\n" +
-                "How do I get the path of the directory in which a Bash script is located, inside that script?\n" +
-                "For instance, let's say I want to use a Bash script as a launcher for another application. I want to change the working directory to the one where the Bash script is located, so I can operate on the files in that directory, like so:\n";
+        String text="How to show a modal dialog in CSS JavaScript using bootstrap? Im using react-16 in a project created using create-react-app and the vanilla bootstrap 4 library that provides styling (no components). Can someone point me towards a working example where pressing a button I can open a modal dialog styled with bootstrap?";
         main.handleinput(text);
     }
 }

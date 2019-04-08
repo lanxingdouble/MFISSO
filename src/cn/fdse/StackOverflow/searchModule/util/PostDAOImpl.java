@@ -39,7 +39,7 @@ public class PostDAOImpl implements PostDAO {
     File file = null, fileAnswer = null;
     String parentId, postTypeId, postId;
     Directory dirPost, dirAnswer;
-    TermQuery titleQuery = null, bodyQuery = null, tagQuery = null,synonymsQuery=null;
+    TermQuery titleQuery = null, bodyQuery = null, tagQuery = null, synonymsQuery = null;
     Query numberRange = null, postType = null;
     int id = 0;
     String title, body, tag;
@@ -130,10 +130,10 @@ public class PostDAOImpl implements PostDAO {
             if (synonyms.has(kw)) {
                 //System.out.println(synonyms.get(kw).toString());
                 String synonymstag_str = synonyms.get(kw).toString();
-                synonymstag_str = synonymstag_str.replace("[", "").replace("]", "").replace("\"", "")+",";
+                synonymstag_str = synonymstag_str.replace("[", "").replace("]", "").replace("\"", "") + ",";
                 String[] synonyms_tag = synonymstag_str.split(",");
-                float boost= (float) (1.0/(synonyms_tag.length*1.0));
-                for (String tag:synonyms_tag) {
+                float boost = (float) (1.0 / (synonyms_tag.length * 1.0));
+                for (String tag : synonyms_tag) {
                     synonymsQuery = new TermQuery(new Term("Tags", tag));
                     synonymsQuery.setBoost(boost);
                     booleanQuery.add(synonymsQuery, BooleanClause.Occur.SHOULD);
@@ -203,15 +203,28 @@ public class PostDAOImpl implements PostDAO {
                         tag = tagBody;
 
                     post = new Post(id, title, body, tag);
-                    System.out.println("document.get(\"Language\")"+document.get("Language"));
                     post.setFacetName(document.get("Concern"), document.get("System"), document.get("Language"), document.get("Development"),
                             document.get("Framework"), document.get("Database"), document.get("Technology"));
                     if (num == 0) {
                         tempPostList = new ArrayList<Post>();
                     }
-                    tempPostList.add(post);
-                    num++;
-
+                    //判断query的刻面是否全为others,若不是全为others则根据此对候选答案进行筛选
+                    if (postfacettype.technology.equals("Others") &&
+                            postfacettype.database.equals("Others") &&
+                            postfacettype.framework.equals("Others") &&
+                            postfacettype.development.equals("Others") &&
+                            postfacettype.language.equals("Others") &&
+                            postfacettype.technology.equals("Others") &&
+                            postfacettype.system.equals("Others")
+                    ) {
+                        tempPostList.add(post);
+                        num++;
+                    }else {
+                        if (judgePostWithFactet(document, postfacettype)) {
+                            tempPostList.add(post);
+                            num++;
+                        }
+                    }
                     //set post answer
                     if (num == 30) {
                         sat[numIndex] = new searchAnswerThread(tempPostList, searcherPost, highlighter, analyzer);
@@ -311,6 +324,94 @@ public class PostDAOImpl implements PostDAO {
             }
         }
         return postList;
+    }
+
+    public boolean judgePostWithFactet(Document d, PostFacetType p) {
+//        String dConcern = d.get("Concern");
+//        String pConcern = p.concern;
+//        String dLanguage = d.get("Language");
+//        String pLanguage = p.language;
+//        String dSystem = d.get("System");
+//        String pSystem = p.system;
+//        String dDevelopment = d.get("Development");
+//        String pDevelopment = p.development;
+//        String dFramework = d.get("Framework");
+//        String pFramework = p.framework;
+//        String dDatabase = d.get("Database");
+//        String pDatabase = p.database;
+//        String dTechnology = d.get("Technology");
+//        String pTechnology = p.technology;
+
+        if (isContain(d.get("Concern"), p.concern)) {
+//            System.out.println(d.get("Concern"));
+//            System.out.println(p.concern);
+            return true;
+        }
+        if (isContain(d.get("Language"), p.language)) {
+//            System.out.println(d.get("Language"));
+//            System.out.println(p.language);
+            return true;
+        }
+        if (isContain(d.get("System"), p.system)) {
+//            System.out.println(d.get("System"));
+//            System.out.println(p.system);
+            return true;
+        }
+        if (isContain(d.get("Development"), p.development)) {
+//            System.out.println(d.get("Development"));
+//            System.out.println(p.development);
+            return true;
+        }
+        if (isContain(d.get("Framework"), p.framework)) {
+//            System.out.println(d.get("Framework"));
+//            System.out.println(p.framework);
+            return true;
+        }
+        if (isContain(d.get("Database"), p.database)) {
+//            System.out.println(d.get("Database"));
+//            System.out.println(p.database);
+            return true;
+        }
+        if (isContain(d.get("Technology"), p.technology)) {
+//            System.out.println(d.get("Technology"));
+//            System.out.println(p.technology);
+            return true;
+        }
+        return false;
+//        if (dConcern != "Others" && pConcern != "Others") {
+//
+//        }
+//        if (dLanguage != "Others" && pLanguage != "Others") {
+//
+//        }
+//        if (dSystem != "Others" && pSystem != "Others") {
+//
+//        }
+//        if (dDevelopment != "Others" && pDevelopment != "Others") {
+//
+//        }
+//        if (dFramework != "Others" && pFramework != "Others") {
+//
+//        }
+//        if (dDatabase != "Others" && pDatabase != "Others") {
+//
+//        }
+//        if (dTechnology != "Others" && pTechnology != "Others") {
+//
+//        }
+    }
+
+    public boolean isContain(String a, String b) {
+        if (a.equals("Others") || b.equals("Others")) {
+            return false;
+        }
+        String[] aa = a.split(",");
+        for (String aaa : aa) {
+            if (b.contains(aaa)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean iS(List<CodeResult> postList, String postId) {

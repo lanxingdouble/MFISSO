@@ -52,7 +52,7 @@ public class InputIDF {
         }
     }
 
-    //在所有title中没有出现过的词，其IDF=5,
+    //若是在title中idf为0，则用该词的同义标签去寻找
     public String handleInput(String s, Integer limit) throws IOException {
         JsonObject synonyms = jsonOperation.readJson("E:\\MFISSO\\StackOverflow Search Tool code\\MFISSO WEB\\synonyms.json");
         Directory directroy = null;
@@ -60,7 +60,8 @@ public class InputIDF {
         indexreader = DirectoryReader.open(directroy);
         indexSearcher = new IndexSearcher(indexreader);
         maxDoc = indexreader.maxDoc();
-        String[] keywords = s.split(",");
+        //通过lucene获取idf,单词要转化为小写
+        String[] keywords = s.toLowerCase().split(",");
         if (keywords.length == 0) {
             keywords = s.split(" ");
         }
@@ -97,7 +98,7 @@ public class InputIDF {
                     synonymstag_str = synonymstag_str.replace("[", "").replace("]", "").replace("\"", "")+",";
                     String[] synonyms_tag = synonymstag_str.split(",");
                     for(String tag: synonyms_tag){
-                        idf = getIDF(keyword);
+                        idf = getIDF(tag);
                         if(idf>0) break;
                     }
                 }
@@ -128,7 +129,8 @@ public class InputIDF {
         InputIDF inputidf = new InputIDF();
 //        System.out.println(inputidf.getIDF("browserdetail"));
 //        System.out.println(inputidf.getIDF("java"));
-        inputidf.handleInput("how,to,make,textview,bold,adsxe", 2);
+       //通过lucene获取idf,单词要转化为小写
+        inputidf.handleInput("how,to,make,textview,bold,adsxe,javascript", 2);
     }
 
 
